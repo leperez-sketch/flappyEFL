@@ -10,7 +10,7 @@
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
         body {
             margin: 0;
-            background: #1a1a2e;
+            background: #10101c;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -23,10 +23,10 @@
             position: relative;
             width: 800px;
             height: 600px;
-            background: #70c5ce;
+            background: #4ec0ca;
             border: 6px solid #fff;
             border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
             overflow: hidden;
         }
         .screen {
@@ -75,7 +75,6 @@
             outline: none;
         }
 
-        /* Lobby de jugadores */
         #player-slots {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -84,7 +83,7 @@
             margin: 15px 0;
         }
         .slot {
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.5);
             border: 2px dashed #fff;
             padding: 10px;
             border-radius: 10px;
@@ -92,7 +91,7 @@
             font-weight: bold;
         }
 
-        canvas { display: block; background: #70c5ce; }
+        canvas { display: block; background: #4ec0ca; }
 
         #hud {
             position: absolute;
@@ -107,10 +106,9 @@
             text-align: center; font-size: 2rem; font-weight: bold;
             color: #fff; text-shadow: 3px 3px #000;
             pointer-events: none; z-index: 5;
-            background: rgba(0,0,0,0.3); padding: 6px 0;
+            background: rgba(0,0,0,0.4); padding: 6px 0;
         }
 
-        /* Pantalla de Control Móvil */
         #mobile-controller {
             width: 100%; height: 100%;
             display: flex; flex-direction: column;
@@ -139,7 +137,7 @@
         <button class="btn btn-join" onclick="showJoinScreen()">📱 Join Game (Student Device)</button>
     </div>
 
-    <!-- HOST LOBBY (SMARTBOARD) -->
+    <!-- HOST LOBBY -->
     <div id="host-lobby-screen" class="screen hidden">
         <h1>Room Code: <span id="room-code-display" style="color:#ffeb3b;">----</span></h1>
         <div style="display:flex; align-items:center; gap:20px;">
@@ -174,7 +172,7 @@
         <button class="btn btn-level" style="margin-top:15px;" onclick="startHostGame()">🚀 Start Match</button>
     </div>
 
-    <!-- JOIN SCREEN (STUDENT) -->
+    <!-- JOIN SCREEN -->
     <div id="join-screen" class="screen hidden">
         <h1>Join Game</h1>
         <input type="text" id="join-code-input" placeholder="ROOM CODE" maxlength="4" style="text-transform:uppercase;">
@@ -183,7 +181,7 @@
         <p id="join-status" style="color:#ffeb3b; font-weight:bold;"></p>
     </div>
 
-    <!-- MOBILE CONTROLLER SCREEN -->
+    <!-- CONTROLLER SCREEN -->
     <div id="controller-screen" class="screen hidden">
         <div id="mobile-controller">
             <h2 id="player-hud-name" style="margin:10px 0;">Player</h2>
@@ -191,7 +189,7 @@
         </div>
     </div>
 
-    <!-- GAME OVER SCREEN (HOST) -->
+    <!-- GAME OVER SCREEN -->
     <div id="gameover-screen" class="screen hidden" style="background: rgba(0,0,0,0.88);">
         <h1 style="color: #f44336; font-size: 3.5rem;">Match Ended</h1>
         <div id="leaderboard-results" style="width:80%; font-size:1.4rem; line-height:1.6; font-weight:bold; margin-bottom:15px;"></div>
@@ -209,7 +207,6 @@
 </div>
 
 <script>
-    // --- COLOR PALETTE FOR 6 PLAYERS ---
     const BIRD_COLORS = [
         { name: "Yellow", hex: "#ffeb3b", dark: "#f57f17" },
         { name: "Red", hex: "#ff1744", dark: "#b71c1c" },
@@ -219,7 +216,6 @@
         { name: "Orange", hex: "#ff9100", dark: "#e65100" }
     ];
 
-    // --- VELOCITY MATRIX (+0.50 INCREASE) ---
     const configuration = {
         A1: { speed: 1.5, gap: 240 },
         A2: { speed: 1.7, gap: 220 },
@@ -228,35 +224,194 @@
         C1: { speed: 2.3, gap: 180 }
     };
 
-    // --- VERB DATABASE (A1 - C1) ---
+    // --- COMPLETE 30 VERBS PER CEFR LEVEL AND TENSE ---
     const verbDatabase = {
         A1: {
-            simplePast: [{ inf: "Play", corr: "played", incorr: "playedd" }, { inf: "Eat", corr: "ate", incorr: "eated" }, { inf: "Go", corr: "went", incorr: "gone" }],
-            participle: [{ inf: "Play", corr: "played", incorr: "playen" }, { inf: "Eat", corr: "eaten", incorr: "ate" }, { inf: "Go", corr: "gone", incorr: "went" }]
+            simplePast: [
+                { inf: "Play", corr: "played", incorr: "playedd" }, { inf: "Eat", corr: "ate", incorr: "eated" },
+                { inf: "Like", corr: "liked", incorr: "liken" }, { inf: "Go", corr: "went", incorr: "gone" },
+                { inf: "Make", corr: "made", incorr: "maked" }, { inf: "Have", corr: "had", incorr: "haved" },
+                { inf: "See", corr: "saw", incorr: "seen" }, { inf: "Do", corr: "did", incorr: "doed" },
+                { inf: "Come", corr: "came", incorr: "comed" }, { inf: "Take", corr: "took", incorr: "taked" },
+                { inf: "Give", corr: "gave", incorr: "gived" }, { inf: "Find", corr: "found", incorr: "finded" },
+                { inf: "Tell", corr: "told", incorr: "telled" }, { inf: "Ask", corr: "asked", incorr: "askt" },
+                { inf: "Work", corr: "worked", incorr: "worken" }, { inf: "Call", corr: "called", incorr: "calld" },
+                { inf: "Try", corr: "tried", incorr: "tryed" }, { inf: "Need", corr: "needed", incorr: "needt" },
+                { inf: "Feel", corr: "felt", incorr: "feeled" }, { inf: "Become", corr: "became", incorr: "becomed" },
+                { inf: "Leave", corr: "left", incorr: "leaved" }, { inf: "Put", corr: "put", incorr: "puted" },
+                { inf: "Mean", corr: "meant", incorr: "meaned" }, { inf: "Keep", corr: "kept", incorr: "keeped" },
+                { inf: "Let", corr: "let", incorr: "leted" }, { inf: "Begin", corr: "began", incorr: "begined" },
+                { inf: "Seem", corr: "seemed", incorr: "seemt" }, { inf: "Help", corr: "helped", incorr: "helpt" },
+                { inf: "Talk", corr: "talked", incorr: "talken" }, { inf: "Turn", corr: "turned", incorr: "turnt" }
+            ],
+            participle: [
+                { inf: "Play", corr: "played", incorr: "playen" }, { inf: "Eat", corr: "eaten", incorr: "ate" },
+                { inf: "Like", corr: "liked", incorr: "liket" }, { inf: "Go", corr: "gone", incorr: "went" },
+                { inf: "Make", corr: "made", incorr: "maken" }, { inf: "Have", corr: "had", incorr: "hadder" },
+                { inf: "See", corr: "seen", incorr: "saw" }, { inf: "Do", corr: "done", incorr: "did" },
+                { inf: "Come", corr: "come", incorr: "came" }, { inf: "Take", corr: "taken", incorr: "took" },
+                { inf: "Give", corr: "given", incorr: "gave" }, { inf: "Find", corr: "found", incorr: "founden" },
+                { inf: "Tell", corr: "told", incorr: "tollen" }, { inf: "Ask", corr: "asked", incorr: "asken" },
+                { inf: "Work", corr: "worked", incorr: "worken" }, { inf: "Call", corr: "called", incorr: "callen" },
+                { inf: "Try", corr: "tried", incorr: "tryen" }, { inf: "Need", corr: "needed", incorr: "needen" },
+                { inf: "Feel", corr: "felt", incorr: "feelen" }, { inf: "Become", corr: "become", incorr: "became" },
+                { inf: "Leave", corr: "left", incorr: "leaven" }, { inf: "Put", corr: "put", incorr: "putten" },
+                { inf: "Mean", corr: "meant", incorr: "meanen" }, { inf: "Keep", corr: "kept", incorr: "keepen" },
+                { inf: "Let", corr: "let", incorr: "letten" }, { inf: "Begin", corr: "begun", incorr: "began" },
+                { inf: "Seem", corr: "seemed", incorr: "seemen" }, { inf: "Help", corr: "helped", incorr: "helpen" },
+                { inf: "Talk", corr: "talked", incorr: "talken" }, { inf: "Turn", corr: "turned", incorr: "turnen" }
+            ]
         },
         A2: {
-            simplePast: [{ inf: "Buy", corr: "bought", incorr: "buyed" }, { inf: "Write", corr: "wrote", incorr: "writed" }, { inf: "See", corr: "saw", incorr: "seen" }],
-            participle: [{ inf: "Buy", corr: "bought", incorr: "boughten" }, { inf: "Write", corr: "written", incorr: "wrote" }, { inf: "See", corr: "seen", incorr: "saw" }]
+            simplePast: [
+                { inf: "Study", corr: "studied", incorr: "studyed" }, { inf: "Buy", corr: "bought", incorr: "buyed" },
+                { inf: "Stop", corr: "stopped", incorr: "stoped" }, { inf: "Write", corr: "wrote", incorr: "writed" },
+                { inf: "Drink", corr: "drank", incorr: "drinked" }, { inf: "Sleep", corr: "slept", incorr: "sleeped" },
+                { inf: "Run", corr: "ran", incorr: "runned" }, { inf: "Swim", corr: "swam", incorr: "swimmed" },
+                { inf: "Fly", corr: "flew", incorr: "flied" }, { inf: "Drive", corr: "drove", incorr: "drived" },
+                { inf: "Break", corr: "broke", incorr: "breaked" }, { inf: "Speak", corr: "spoke", incorr: "speaked" },
+                { inf: "Choose", corr: "chose", incorr: "choosed" }, { inf: "Forget", corr: "forgot", incorr: "forgetted" },
+                { inf: "Stand", corr: "stood", incorr: "standed" }, { inf: "Wear", corr: "wore", incorr: "weared" },
+                { inf: "Sing", corr: "sang", incorr: "singed" }, { inf: "Teach", corr: "taught", incorr: "teached" },
+                { inf: "Think", corr: "thought", incorr: "thinked" }, { inf: "Win", corr: "won", incorr: "winned" },
+                { inf: "Bring", corr: "brought", incorr: "bringed" }, { inf: "Catch", corr: "caught", incorr: "catched" },
+                { inf: "Build", corr: "built", incorr: "builded" }, { inf: "Hurt", corr: "hurt", incorr: "hurted" },
+                { inf: "Pay", corr: "paid", incorr: "payed" }, { inf: "Sell", corr: "sold", incorr: "selled" },
+                { inf: "Send", corr: "sent", incorr: "sended" }, { inf: "Spend", corr: "spent", incorr: "spended" },
+                { inf: "Fall", corr: "fell", incorr: "falled" }, { inf: "Meet", corr: "met", incorr: "meeted" }
+            ],
+            participle: [
+                { inf: "Study", corr: "studied", incorr: "studien" }, { inf: "Buy", corr: "bought", incorr: "boughten" },
+                { inf: "Stop", corr: "stopped", incorr: "stopt" }, { inf: "Write", corr: "written", incorr: "wrote" },
+                { inf: "Drink", corr: "drunk", incorr: "drank" }, { inf: "Sleep", corr: "slept", incorr: "sleepen" },
+                { inf: "Run", corr: "run", incorr: "ran" }, { inf: "Swim", corr: "swum", incorr: "swam" },
+                { inf: "Fly", corr: "flown", incorr: "flew" }, { inf: "Drive", corr: "driven", incorr: "drove" },
+                { inf: "Break", corr: "broken", incorr: "broke" }, { inf: "Speak", corr: "spoken", incorr: "spoke" },
+                { inf: "Choose", corr: "chosen", incorr: "chose" }, { inf: "Forget", corr: "forgotten", incorr: "forgot" },
+                { inf: "Stand", corr: "stood", incorr: "standen" }, { inf: "Wear", corr: "worn", incorr: "wore" },
+                { inf: "Sing", corr: "sung", incorr: "sang" }, { inf: "Teach", corr: "taught", incorr: "taughen" },
+                { inf: "Think", corr: "thought", incorr: "thoughten" }, { inf: "Win", corr: "won", incorr: "wonnen" },
+                { inf: "Bring", corr: "brought", incorr: "broughten" }, { inf: "Catch", corr: "caught", incorr: "caughten" },
+                { inf: "Build", corr: "built", incorr: "builden" }, { inf: "Hurt", corr: "hurt", incorr: "hurten" },
+                { inf: "Pay", corr: "paid", incorr: "payen" }, { inf: "Sell", corr: "sold", incorr: "solden" },
+                { inf: "Send", corr: "sent", incorr: "senden" }, { inf: "Spend", corr: "spent", incorr: "spenden" },
+                { inf: "Fall", corr: "fallen", incorr: "fell" }, { inf: "Meet", corr: "met", incorr: "meeten" }
+            ]
         },
         B1: {
-            simplePast: [{ inf: "Speak", corr: "spoke", incorr: "speaked" }, { inf: "Understand", corr: "understood", incorr: "understanded" }],
-            participle: [{ inf: "Speak", corr: "spoken", incorr: "spoke" }, { inf: "Understand", corr: "understood", incorr: "understanden" }]
+            simplePast: [
+                { inf: "Decide", corr: "decided", incorr: "decidda" }, { inf: "Plan", corr: "planned", incorr: "planed" },
+                { inf: "Understand", corr: "understood", incorr: "understanded" }, { inf: "Lose", corr: "lost", incorr: "loosed" },
+                { inf: "Grow", corr: "grew", incorr: "growed" }, { inf: "Lead", corr: "led", incorr: "leaded" },
+                { inf: "Draw", corr: "drew", incorr: "drawed" }, { inf: "Ring", corr: "rang", incorr: "ringed" },
+                { inf: "Shake", corr: "shook", incorr: "shaked" }, { inf: "Shine", corr: "shone", incorr: "shined" },
+                { inf: "Shoot", corr: "shot", incorr: "shooted" }, { inf: "Shut", corr: "shut", incorr: "shutted" },
+                { inf: "Sink", corr: "sank", incorr: "sinked" }, { inf: "Sit", corr: "sat", incorr: "sitted" },
+                { inf: "Slide", corr: "slid", incorr: "slided" }, { inf: "Smell", corr: "smelt", incorr: "smelledd" },
+                { inf: "Spell", corr: "spelt", incorr: "spelledd" }, { inf: "Spill", corr: "spilt", incorr: "spilledd" },
+                { inf: "Spoil", corr: "spoilt", incorr: "spoild" }, { inf: "Spread", corr: "spread", incorr: "spreaded" },
+                { inf: "Spring", corr: "sprang", incorr: "springed" }, { inf: "Steal", corr: "stole", incorr: "stealed" },
+                { inf: "Stick", corr: "stuck", incorr: "sticked" }, { inf: "Sting", corr: "stung", incorr: "stinged" },
+                { inf: "Strike", corr: "struck", incorr: "striked" }, { inf: "Swear", corr: "swore", incorr: "sweared" },
+                { inf: "Sweep", corr: "swept", incorr: "sweeped" }, { inf: "Throw", corr: "threw", incorr: "throwed" },
+                { inf: "Wake", corr: "woke", incorr: "waked" }, { inf: "Hide", corr: "hid", incorr: "hided" }
+            ],
+            participle: [
+                { inf: "Decide", corr: "decided", incorr: "deciden" }, { inf: "Plan", corr: "planned", incorr: "plannet" },
+                { inf: "Understand", corr: "understood", incorr: "understanden" }, { inf: "Lose", corr: "lost", incorr: "loosen" },
+                { inf: "Grow", corr: "grown", incorr: "grew" }, { inf: "Lead", corr: "led", incorr: "leaden" },
+                { inf: "Draw", corr: "drawn", incorr: "drew" }, { inf: "Ring", corr: "rung", incorr: "rang" },
+                { inf: "Shake", corr: "shaken", incorr: "shook" }, { inf: "Shine", corr: "shone", incorr: "shinen" },
+                { inf: "Shoot", corr: "shot", incorr: "shotten" }, { inf: "Shut", corr: "shut", incorr: "shutten" },
+                { inf: "Sink", corr: "sunk", incorr: "sank" }, { inf: "Sit", corr: "sat", incorr: "satten" },
+                { inf: "Slide", corr: "slid", incorr: "slidden" }, { inf: "Smell", corr: "smelt", incorr: "smellen" },
+                { inf: "Spell", corr: "spelt", incorr: "spellen" }, { inf: "Spill", corr: "spilt", incorr: "spillen" },
+                { inf: "Spoil", corr: "spoilt", incorr: "spoilen" }, { inf: "Spread", corr: "spread", incorr: "spreaden" },
+                { inf: "Spring", corr: "sprung", incorr: "sprang" }, { inf: "Steal", corr: "stolen", incorr: "stole" },
+                { inf: "Stick", corr: "stuck", incorr: "stucken" }, { inf: "Sting", corr: "stung", incorr: "stingen" },
+                { inf: "Strike", corr: "struck", incorr: "stricken" }, { inf: "Swear", corr: "sworn", incorr: "swore" },
+                { inf: "Sweep", corr: "swept", incorr: "sweepen" }, { inf: "Throw", corr: "thrown", incorr: "threw" },
+                { inf: "Wake", corr: "woken", incorr: "woke" }, { inf: "Hide", corr: "hidden", incorr: "hid" }
+            ]
         },
         B2: {
-            simplePast: [{ inf: "Freeze", corr: "froze", incorr: "freezed" }, { inf: "Seek", corr: "sought", incorr: "seeked" }],
-            participle: [{ inf: "Freeze", corr: "frozen", incorr: "froze" }, { inf: "Seek", corr: "sought", incorr: "soughten" }]
+            simplePast: [
+                { inf: "Achieve", corr: "achieved", incorr: "achieven" }, { inf: "Seek", corr: "sought", incorr: "seeked" },
+                { inf: "Deny", corr: "denied", incorr: "denyed" }, { inf: "Freeze", corr: "froze", incorr: "freezed" },
+                { inf: "Arise", corr: "arose", incorr: "arised" }, { inf: "Awake", corr: "awoke", incorr: "awaked" },
+                { inf: "Bear", corr: "bore", incorr: "beared" }, { inf: "Beat", corr: "beat", incorr: "beated" },
+                { inf: "Bend", corr: "bent", incorr: "bended" }, { inf: "Bet", corr: "bet", incorr: "betted" },
+                { inf: "Bind", corr: "bound", incorr: "binded" }, { inf: "Bite", corr: "bit", incorr: "bited" },
+                { inf: "Bleed", corr: "bled", incorr: "bleeded" }, { inf: "Blow", corr: "blew", incorr: "blowed" },
+                { inf: "Breed", corr: "bred", incorr: "breeded" }, { inf: "Broadcast", corr: "broadcast", incorr: "broadcasted" },
+                { inf: "Burst", corr: "burst", incorr: "bursted" }, { inf: "Cast", corr: "cast", incorr: "casted" },
+                { inf: "Cling", corr: "clung", incorr: "clinged" }, { inf: "Creep", corr: "crept", incorr: "creeped" },
+                { inf: "Deal", corr: "dealt", incorr: "dealed" }, { inf: "Dig", corr: "dug", incorr: "digged" },
+                { inf: "Flee", corr: "fled", incorr: "fleed" }, { inf: "Forbid", corr: "forbade", incorr: "forbidded" },
+                { inf: "Forgive", corr: "forgave", incorr: "forgived" }, { inf: "Kneel", corr: "knelt", incorr: "kneeledd" },
+                { inf: "Lay", corr: "laid", incorr: "layed" }, { inf: "Lean", corr: "leant", incorr: "leanedd" },
+                { inf: "Leap", corr: "leapt", incorr: "leapedd" }, { inf: "Lend", corr: "lent", incorr: "lended" }
+            ],
+            participle: [
+                { inf: "Achieve", corr: "achieved", incorr: "achievedded" }, { inf: "Seek", corr: "sought", incorr: "soughten" },
+                { inf: "Deny", corr: "denied", incorr: "denyen" }, { inf: "Freeze", corr: "frozen", incorr: "froze" },
+                { inf: "Arise", corr: "arisen", incorr: "arose" }, { inf: "Awake", corr: "awoken", incorr: "awoke" },
+                { inf: "Bear", corr: "borne", incorr: "bore" }, { inf: "Beat", corr: "beaten", incorr: "beat" },
+                { inf: "Bend", corr: "bent", incorr: "benden" }, { inf: "Bet", corr: "bet", incorr: "betten" },
+                { inf: "Bind", corr: "bound", incorr: "bounden" }, { inf: "Bite", corr: "bitten", incorr: "bit" },
+                { inf: "Bleed", corr: "bled", incorr: "bledden" }, { inf: "Blow", corr: "blown", incorr: "blew" },
+                { inf: "Breed", corr: "bred", incorr: "bredden" }, { inf: "Broadcast", corr: "broadcast", incorr: "broadcasten" },
+                { inf: "Burst", corr: "burst", incorr: "bursten" }, { inf: "Cast", corr: "cast", incorr: "casten" },
+                { inf: "Cling", corr: "clung", incorr: "clungen" }, { inf: "Creep", corr: "crept", incorr: "creepen" },
+                { inf: "Deal", corr: "dealt", incorr: "dealen" }, { inf: "Dig", corr: "dug", incorr: "duggen" },
+                { inf: "Flee", corr: "fled", incorr: "fleen" }, { inf: "Forbid", corr: "forbidden", incorr: "forbade" },
+                { inf: "Forgive", corr: "forgiven", incorr: "forgave" }, { inf: "Kneel", corr: "knelt", incorr: "knelten" },
+                { inf: "Lay", corr: "laid", incorr: "lain" }, { inf: "Lean", corr: "leant", incorr: "leanen" },
+                { inf: "Leap", corr: "leapt", incorr: "leapen" }, { inf: "Lend", corr: "lent", incorr: "lenden" }
+            ]
         },
         C1: {
-            simplePast: [{ inf: "Undergo", corr: "underwent", incorr: "undergone" }, { inf: "Shrink", corr: "shrank", incorr: "shrunked" }],
-            participle: [{ inf: "Undergo", corr: "undergone", incorr: "underwent" }, { inf: "Shrink", corr: "shrunk", incorr: "shrank" }]
+            simplePast: [
+                { inf: "Undergo", corr: "underwent", incorr: "undergone" }, { inf: "Overcome", corr: "overcame", incorr: "overcomed" },
+                { inf: "Tear", corr: "tore", incorr: "teared" }, { inf: "Shrink", corr: "shrank", incorr: "shrunked" },
+                { inf: "Beseech", corr: "besought", incorr: "beseeched" }, { inf: "Cleave", corr: "clove", incorr: "cleaved" },
+                { inf: "Sling", corr: "slung", incorr: "slinged" }, { inf: "Slink", corr: "slunk", incorr: "slinked" },
+                { inf: "Smite", corr: "smote", incorr: "smited" }, { inf: "Spin", corr: "spun", incorr: "spinned" },
+                { inf: "Spit", corr: "spat", incorr: "spitted" }, { inf: "Split", corr: "split", incorr: "splitted" },
+                { inf: "Stave", corr: "stove", incorr: "staved" }, { inf: "Strew", corr: "strewed", incorr: "strewt" },
+                { inf: "Stride", corr: "strode", incorr: "strided" }, { inf: "Strive", corr: "strove", incorr: "strived" },
+                { inf: "Sublet", corr: "sublet", incorr: "subletted" }, { inf: "Swell", corr: "swelled", incorr: "swellt" },
+                { inf: "Thrust", corr: "thrust", incorr: "thrusted" }, { inf: "Tread", corr: "trod", incorr: "treaded" },
+                { inf: "Uphold", corr: "upheld", incorr: "upholded" }, { inf: "Withdraw", corr: "withdrew", incorr: "withdrawed" },
+                { inf: "Withhold", corr: "withheld", incorr: "withholded" }, { inf: "Withstand", corr: "withstood", incorr: "withstanded" },
+                { inf: "Wring", corr: "wrung", incorr: "wringed" }, { inf: "Overthrow", corr: "overthrew", incorr: "overthrowed" },
+                { inf: "Undertake", corr: "undertook", incorr: "undertaked" }, { inf: "Outdo", corr: "outdid", incorr: "outdoed" },
+                { inf: "Overhear", corr: "overheard", incorr: "overheared" }, { inf: "Foresee", corr: "foresaw", incorr: "foreseen" }
+            ],
+            participle: [
+                { inf: "Undergo", corr: "undergone", incorr: "underwent" }, { inf: "Overcome", corr: "overcome", incorr: "overcamed" },
+                { inf: "Tear", corr: "torn", incorr: "toren" }, { inf: "Shrink", corr: "shrunk", incorr: "shrank" },
+                { inf: "Beseech", corr: "besought", incorr: "besoughten" }, { inf: "Cleave", corr: "cloven", incorr: "clove" },
+                { inf: "Sling", corr: "slung", incorr: "slungen" }, { inf: "Slink", corr: "slunk", incorr: "slunken" },
+                { inf: "Smite", corr: "smitten", incorr: "smote" }, { inf: "Spin", corr: "spun", incorr: "spunnen" },
+                { inf: "Spit", corr: "spat", incorr: "spitten" }, { inf: "Split", corr: "split", incorr: "splitten" },
+                { inf: "Stave", corr: "stoven", incorr: "stove" }, { inf: "Strew", corr: "strewn", incorr: "strewed" },
+                { inf: "Stride", corr: "strridden", incorr: "strode" }, { inf: "Strive", corr: "striven", incorr: "strove" },
+                { inf: "Sublet", corr: "sublet", incorr: "subletten" }, { inf: "Swell", corr: "swollen", incorr: "swelled" },
+                { inf: "Thrust", corr: "thrust", incorr: "thrusten" }, { inf: "Tread", corr: "trodden", incorr: "trod" },
+                { inf: "Uphold", corr: "upheld", incorr: "uphelden" }, { inf: "Withdraw", corr: "withdrawn", incorr: "withdrew" },
+                { inf: "Withhold", corr: "withheld", incorr: "withhelden" }, { inf: "Withstand", corr: "withstood", incorr: "withstooden" },
+                { inf: "Wring", corr: "wrung", incorr: "wrungen" }, { inf: "Overthrow", corr: "overthrown", incorr: "overthrew" },
+                { inf: "Undertake", corr: "undertaken", incorr: "undertook" }, { inf: "Outdo", corr: "outdone", incorr: "outdid" },
+                { inf: "Overhear", corr: "overheard", incorr: "overhearden" }, { inf: "Foresee", corr: "foreseen", incorr: "foresaw" }
+            ]
         }
     };
 
-    // --- GAME ENGINE VARIABLES ---
     let isHost = false;
     let peer = null;
     let roomCode = "";
-    let connectedPlayers = []; // { id, name, color, conn, bird }
+    let connectedPlayers = [];
     let gameActive = false;
     let frameCounter = 0;
     let chosenLevel = "A1";
@@ -271,29 +426,22 @@
     let currentVerbPair = null;
     let animationId = null;
 
-    // --- SCREEN NAVIGATION ---
     function switchScreen(fromId, toId) {
         document.getElementById(fromId).classList.add('hidden');
         document.getElementById(toId).classList.remove('hidden');
     }
 
-    // --- PEERJS SETUP (HOST) ---
     function setupHost() {
         isHost = true;
         roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
         document.getElementById('room-code-display').innerText = roomCode;
 
-        // Generate QR code
         const currentUrl = window.location.href.split('?')[0];
         const joinUrl = `${currentUrl}?room=${roomCode}`;
         document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(joinUrl)}`;
 
         peer = new Peer(`FV-${roomCode}`);
-
-        peer.on('open', () => {
-            switchScreen('mode-screen', 'host-lobby-screen');
-        });
-
+        peer.on('open', () => switchScreen('mode-screen', 'host-lobby-screen'));
         peer.on('connection', (conn) => {
             conn.on('data', (data) => handleHostMessage(conn, data));
             conn.on('close', () => removePlayer(conn.peer));
@@ -313,7 +461,7 @@
                 color: colorObj,
                 conn: conn,
                 bird: {
-                    x: 100 + (connectedPlayers.length * 30), // Staggered X start
+                    x: 100 + (connectedPlayers.length * 30),
                     y: 300,
                     radius: 18,
                     velocity: 0,
@@ -323,7 +471,6 @@
             };
             connectedPlayers.push(player);
             updateLobbyUI();
-
             conn.send({ type: 'JOIN_SUCCESS', color: colorObj, name: player.name });
         } else if (data.type === 'FLAP') {
             const p = connectedPlayers.find(p => p.id === conn.peer);
@@ -341,7 +488,7 @@
                 slot.style.color = '#000';
                 slot.innerText = `${i + 1}. ${connectedPlayers[i].name}`;
             } else {
-                slot.style.background = "rgba(0,0,0,0.4)";
+                slot.style.background = "rgba(0,0,0,0.5)";
                 slot.style.color = "#fff";
                 slot.innerText = "Waiting...";
             }
@@ -353,10 +500,8 @@
         updateLobbyUI();
     }
 
-    // --- PEERJS SETUP (PLAYER / CLIENT) ---
     function showJoinScreen() {
         switchScreen('mode-screen', 'join-screen');
-        // Auto-fill room code from URL query if available
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('room')) {
             document.getElementById('join-code-input').value = urlParams.get('room');
@@ -377,11 +522,7 @@
 
         peer.on('open', () => {
             const conn = peer.connect(`FV-${code}`);
-            
-            conn.on('open', () => {
-                conn.send({ type: 'JOIN', name: name });
-            });
-
+            conn.on('open', () => conn.send({ type: 'JOIN', name: name }));
             conn.on('data', (data) => {
                 if (data.type === 'JOIN_SUCCESS') {
                     document.getElementById('player-hud-name').innerText = data.name;
@@ -404,7 +545,6 @@
         }
     }
 
-    // --- GAME ENGINE (HOST) ---
     function startHostGame() {
         if (connectedPlayers.length === 0) {
             alert("At least 1 player must join!");
@@ -442,13 +582,13 @@
         document.getElementById('target-verb').innerText = currentVerbPair.inf.toUpperCase();
 
         const minHeight = 80;
-        const maxHeight = canvas.height - config.gap - minHeight;
+        const maxHeight = canvas.height - config.gap - minHeight - 60; // Leave room for ground
         const topPipeHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
         const isTopCorrect = Math.random() > 0.5;
 
         pipes.push({
             x: startX,
-            width: 130,
+            width: 120,
             topHeight: topPipeHeight,
             gap: config.gap,
             topText: isTopCorrect ? currentVerbPair.corr : currentVerbPair.incorr,
@@ -457,19 +597,117 @@
         });
     }
 
-    function drawPipe(x, y, width, height, isTop) {
-        let grad = ctx.createLinearGradient(x, 0, x + width, 0);
-        grad.addColorStop(0, '#388e3c');
-        grad.addColorStop(0.2, '#81c784');
-        grad.addColorStop(0.4, '#a5d6a7');
-        grad.addColorStop(0.7, '#2e7d32');
-        grad.addColorStop(1, '#1b5e20');
+    // --- ENHANCED CANVAS BACKGROUND (SKY, CLOUDS, HILLS, GROUND) ---
+    function drawEnhancedBackground(frame) {
+        // Sky Gradient
+        let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGrad.addColorStop(0, '#4ec0ca');
+        skyGrad.addColorStop(0.7, '#81d4fa');
+        skyGrad.addColorStop(1, '#e0f7fa');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, y, width, height);
-        ctx.strokeStyle = '#0d3c10';
+        // Animated Clouds
+        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+        let cloudX1 = (frame * 0.4) % (canvas.width + 200) - 100;
+        let cloudX2 = (frame * 0.2 + 300) % (canvas.width + 200) - 100;
+
+        drawCloud(cloudX1, 80, 40);
+        drawCloud(cloudX2, 140, 30);
+
+        // Background City / Hill Skyline
+        ctx.fillStyle = "#73bf2e";
+        ctx.beginPath();
+        ctx.arc(150, 560, 220, Math.PI, 0, false);
+        ctx.arc(500, 570, 260, Math.PI, 0, false);
+        ctx.arc(800, 560, 200, Math.PI, 0, false);
+        ctx.fill();
+
+        ctx.fillStyle = "#558000";
+        ctx.beginPath();
+        ctx.arc(320, 570, 180, Math.PI, 0, false);
+        ctx.arc(680, 580, 190, Math.PI, 0, false);
+        ctx.fill();
+
+        // Animated Ground Stripe
+        const groundHeight = 50;
+        const groundY = canvas.height - groundHeight;
+
+        // Ground Base
+        ctx.fillStyle = "#ded895";
+        ctx.fillRect(0, groundY, canvas.width, groundHeight);
+
+        // Grass Top Trim
+        ctx.fillStyle = "#73bf2e";
+        ctx.fillRect(0, groundY, canvas.width, 14);
+        ctx.fillStyle = "#558000";
+        ctx.fillRect(0, groundY + 14, canvas.width, 4);
+
+        // Ground Diagonal Stripes
+        ctx.strokeStyle = "#ceb86c";
+        ctx.lineWidth = 6;
+        let offset = (frame * 2) % 24;
+        for (let x = -30 + offset; x < canvas.width + 30; x += 24) {
+            ctx.beginPath();
+            ctx.moveTo(x, groundY + 18);
+            ctx.lineTo(x - 12, canvas.height);
+            ctx.stroke();
+        }
+    }
+
+    function drawCloud(x, y, scale) {
+        ctx.beginPath();
+        ctx.arc(x, y, scale, 0, Math.PI * 2);
+        ctx.arc(x + scale * 0.7, y - scale * 0.4, scale * 0.7, 0, Math.PI * 2);
+        ctx.arc(x + scale * 1.3, y, scale * 0.8, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // --- ENHANCED 3D TUBE (MARIO STYLE PIPES WITH CAPS) ---
+    function draw3DPipe(x, y, width, height, isTop) {
+        const capHeight = 32;
+        const capOverlap = 10;
+        const capWidth = width + capOverlap * 2;
+        const capX = x - capOverlap;
+
+        // Determine Body and Cap Y-positions
+        let bodyY = isTop ? 0 : y;
+        let bodyHeight = isTop ? (height - capHeight) : height;
+        let capY = isTop ? (height - capHeight) : y;
+
+        // Pipe Body Gradient (Metallic Green 3D Cylinder)
+        let bodyGrad = ctx.createLinearGradient(x, 0, x + width, 0);
+        bodyGrad.addColorStop(0, '#2d4500');
+        bodyGrad.addColorStop(0.15, '#558000');
+        bodyGrad.addColorStop(0.35, '#a3e048');
+        bodyGrad.addColorStop(0.65, '#73bf2e');
+        bodyGrad.addColorStop(0.9, '#385e00');
+        bodyGrad.addColorStop(1, '#1b3000');
+
+        ctx.fillStyle = bodyGrad;
+        ctx.fillRect(x, bodyY, width, bodyHeight);
+        ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
-        ctx.strokeRect(x, y, width, height);
+        ctx.strokeRect(x, bodyY, width, bodyHeight);
+
+        // Pipe Cap / Rim Gradient
+        let capGrad = ctx.createLinearGradient(capX, 0, capX + capWidth, 0);
+        capGrad.addColorStop(0, '#2d4500');
+        capGrad.addColorStop(0.15, '#558000');
+        capGrad.addColorStop(0.35, '#b8f054');
+        capGrad.addColorStop(0.65, '#73bf2e');
+        capGrad.addColorStop(0.9, '#385e00');
+        capGrad.addColorStop(1, '#1b3000');
+
+        ctx.fillStyle = capGrad;
+        ctx.fillRect(capX, capY, capWidth, capHeight);
+        ctx.strokeRect(capX, capY, capWidth, capHeight);
+
+        // Highlight Specular Lines
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.fillRect(x + width * 0.22, bodyY, width * 0.08, bodyHeight);
+        ctx.fillRect(capX + capWidth * 0.22, capY, capWidth * 0.08, capHeight);
     }
 
     function drawBird(p, frame) {
@@ -482,13 +720,16 @@
         let angle = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, b.velocity * 0.08));
         ctx.rotate(angle);
 
-        // Player Name Tag
+        // Name Tag with Background Pill
+        ctx.font = "bold 13px Arial";
+        let textWidth = ctx.measureText(p.name).width;
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(-textWidth/2 - 6, -b.radius - 22, textWidth + 12, 18);
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 14px Arial";
         ctx.textAlign = "center";
-        ctx.fillText(p.name, 0, -b.radius - 10);
+        ctx.fillText(p.name, 0, -b.radius - 9);
 
-        // Bird Body with Custom Player Color
+        // Bird Body
         ctx.fillStyle = p.color.hex;
         ctx.beginPath();
         ctx.ellipse(0, 0, b.radius + 4, b.radius, 0, 0, Math.PI * 2);
@@ -497,7 +738,7 @@
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Wing Animation
+        // Animated Wing
         let wingOffsetY = Math.sin(frame * 0.25) * 7;
         ctx.fillStyle = p.color.dark;
         ctx.beginPath();
@@ -528,13 +769,13 @@
         frameCounter++;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Background
-        ctx.fillStyle = "#70c5ce";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Draw Enhanced Sky & Ground Background
+        drawEnhancedBackground(frameCounter);
 
         const config = configuration[chosenLevel];
+        const groundY = canvas.height - 50;
 
-        // Update Physics for each player independently (NO BIRD-TO-BIRD COLLISION)
+        // Physics Updates
         let activeCount = 0;
         connectedPlayers.forEach(p => {
             if (p.bird.isAlive) {
@@ -542,8 +783,8 @@
                 p.bird.velocity += GRAVITY;
                 p.bird.y += p.bird.velocity;
 
-                // Out of Bounds
-                if (p.bird.y + p.bird.radius > canvas.height || p.bird.y - p.bird.radius < 0) {
+                // Out of Bounds (Ceiling or Ground)
+                if (p.bird.y + p.bird.radius > groundY || p.bird.y - p.bird.radius < 0) {
                     p.bird.isAlive = false;
                 }
             }
@@ -552,35 +793,35 @@
 
         document.getElementById('alive-count').innerText = activeCount;
 
-        // Render Pipes & Evaluate Collisions
+        // Pipes Logic & Rendering
         for (let i = pipes.length - 1; i >= 0; i--) {
             let pipe = pipes[i];
             pipe.x -= config.speed;
 
             let bottomY = pipe.topHeight + pipe.gap;
 
-            drawPipe(pipe.x, 0, pipe.width, pipe.topHeight, true);
-            drawPipe(pipe.x, bottomY, pipe.width, canvas.height - bottomY, false);
+            // Render 3D Tubes
+            draw3DPipe(pipe.x, 0, pipe.width, pipe.topHeight, true);
+            draw3DPipe(pipe.x, bottomY, pipe.width, groundY - bottomY, false);
 
+            // Labels with thick text shadow for high readability
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 24px Arial";
             ctx.textAlign = "center";
-            ctx.shadowColor = "black"; ctx.shadowBlur = 6;
-            ctx.fillText(pipe.topText, pipe.x + pipe.width / 2, pipe.topHeight - 40);
-            ctx.fillText(pipe.bottomText, pipe.x + pipe.width / 2, bottomY + 40);
+            ctx.shadowColor = "black"; ctx.shadowBlur = 8;
+            ctx.fillText(pipe.topText, pipe.x + pipe.width / 2, pipe.topHeight - 45);
+            ctx.fillText(pipe.bottomText, pipe.x + pipe.width / 2, bottomY + 45);
             ctx.shadowBlur = 0;
 
-            // Collision check per player against pipes
+            // Collision check per player against 3D tubes
             connectedPlayers.forEach(p => {
                 if (!p.bird.isAlive) return;
 
-                if (p.bird.x + p.bird.radius > pipe.x && p.bird.x - p.bird.radius < pipe.x + pipe.width) {
-                    // Hit Top Pipe
+                if (p.bird.x + p.bird.radius > pipe.x - 10 && p.bird.x - p.bird.radius < pipe.x + pipe.width + 10) {
                     if (p.bird.y - p.bird.radius < pipe.topHeight) {
                         if (pipe.topIsCorrect) p.bird.score++;
                         else p.bird.isAlive = false;
                     } 
-                    // Hit Bottom Pipe
                     else if (p.bird.y + p.bird.radius > bottomY) {
                         if (!pipe.topIsCorrect) p.bird.score++;
                         else p.bird.isAlive = false;
@@ -594,7 +835,6 @@
             }
         }
 
-        // End Game when all players are eliminated
         if (activeCount === 0) {
             endMatch();
             return;
