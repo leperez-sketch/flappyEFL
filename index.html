@@ -21,8 +21,8 @@
         }
         #game-container {
             position: relative;
-            width: 800px;
-            height: 600px;
+            width: 1000px;
+            height: 500px;
             background: #4ec0ca;
             border: 6px solid #fff;
             border-radius: 16px;
@@ -42,32 +42,32 @@
             z-index: 10;
         }
         .hidden { display: none !important; }
-        h1 { margin: 0 0 10px 0; text-shadow: 3px 3px #000; font-size: 3rem; color: #ffeb3b; }
-        h2 { margin: 0 0 15px 0; text-shadow: 2px 2px #000; font-size: 1.6rem; }
+        h1 { margin: 0 0 10px 0; text-shadow: 3px 3px #000; font-size: 2.8rem; color: #ffeb3b; }
+        h2 { margin: 0 0 15px 0; text-shadow: 2px 2px #000; font-size: 1.4rem; }
         
         .btn {
             background: #ff5722;
             color: white;
             border: none;
-            padding: 14px 24px;
-            margin: 6px 0;
-            font-size: 1.3rem;
+            padding: 12px 24px;
+            margin: 5px 0;
+            font-size: 1.2rem;
             font-weight: bold;
             border-radius: 35px;
             cursor: pointer;
-            width: 65%;
-            box-shadow: 0 5px #bf360c;
+            width: 50%;
+            box-shadow: 0 4px #bf360c;
             transition: transform 0.1s;
         }
-        .btn:active { transform: translateY(3px); box-shadow: 0 2px #bf360c; }
-        .btn-level { background: #4caf50; box-shadow: 0 5px #1b5e20; }
-        .btn-join { background: #2196f3; box-shadow: 0 5px #0d47a1; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px #bf360c; }
+        .btn-level { background: #4caf50; box-shadow: 0 4px #1b5e20; }
+        .btn-join { background: #2196f3; box-shadow: 0 4px #0d47a1; }
 
         input {
-            width: 65%;
-            padding: 12px 20px;
-            margin: 8px 0;
-            font-size: 1.3rem;
+            width: 50%;
+            padding: 10px 18px;
+            margin: 6px 0;
+            font-size: 1.2rem;
             border-radius: 25px;
             border: 3px solid #fff;
             text-align: center;
@@ -79,15 +79,15 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            width: 80%;
-            margin: 15px 0;
+            width: 75%;
+            margin: 10px 0;
         }
         .slot {
             background: rgba(0,0,0,0.5);
             border: 2px dashed #fff;
-            padding: 10px;
+            padding: 8px;
             border-radius: 10px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
         }
 
@@ -96,17 +96,25 @@
         #hud {
             position: absolute;
             top: 10px; left: 0; width: 100%;
-            display: flex; justify-content: space-between;
-            padding: 0 20px; font-size: 1.5rem; font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; font-size: 1.2rem; font-weight: bold;
             text-shadow: 2px 2px #000; pointer-events: none; z-index: 5;
+        }
+        #audio-controls {
+            pointer-events: auto;
+            background: rgba(0,0,0,0.6);
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.9rem;
         }
         #prompt-banner {
             position: absolute;
-            top: 50px; left: 0; width: 100%;
-            text-align: center; font-size: 2rem; font-weight: bold;
+            top: 45px; left: 0; width: 100%;
+            text-align: center; font-size: 1.8rem; font-weight: bold;
             color: #fff; text-shadow: 3px 3px #000;
             pointer-events: none; z-index: 5;
-            background: rgba(0,0,0,0.4); padding: 6px 0;
+            background: rgba(0,0,0,0.4); padding: 4px 0;
         }
 
         #mobile-controller {
@@ -128,6 +136,8 @@
 </head>
 <body>
 
+<audio id="bgm" src="8782.mp3" loop></audio>
+
 <div id="game-container">
     <!-- MODE SELECTION -->
     <div id="mode-screen" class="screen">
@@ -139,12 +149,12 @@
 
     <!-- HOST LOBBY -->
     <div id="host-lobby-screen" class="screen hidden">
-        <h1>Room Code: <span id="room-code-display" style="color:#ffeb3b;">----</span></h1>
+        <h1 style="font-size:2.2rem; margin-bottom:5px;">Room Code: <span id="room-code-display" style="color:#ffeb3b;">----</span></h1>
         <div style="display:flex; align-items:center; gap:20px;">
-            <img id="qr-code-img" src="" width="130" height="130" style="border:3px solid #fff; border-radius:8px;" alt="QR Code">
+            <img id="qr-code-img" src="" width="100" height="100" style="border:3px solid #fff; border-radius:8px;" alt="QR Code">
             <div style="text-align:left;">
-                <p style="margin:0; font-size:1.2rem;">1. Scan QR or enter Room Code.</p>
-                <p style="margin:5px 0 0 0; font-size:1.2rem;">2. Enter student name.</p>
+                <p style="margin:0; font-size:1.1rem;">1. Scan QR or enter Room Code.</p>
+                <p style="margin:5px 0 0 0; font-size:1.1rem;">2. Enter student name.</p>
             </div>
         </div>
         <div id="player-slots">
@@ -156,20 +166,20 @@
             <div class="slot" id="slot-5">Waiting...</div>
         </div>
         <h2>Select CEFR & Tense</h2>
-        <div style="display:flex; gap:10px; width:70%;">
-            <select id="cefr-select" style="flex:1; font-size:1.1rem; padding:8px; border-radius:10px; font-weight:bold;">
+        <div style="display:flex; gap:10px; width:60%;">
+            <select id="cefr-select" style="flex:1; font-size:1rem; padding:6px; border-radius:10px; font-weight:bold;">
                 <option value="A1">A1 - Beginner</option>
                 <option value="A2">A2 - Elementary</option>
                 <option value="B1">B1 - Intermediate</option>
                 <option value="B2">B2 - Upper Intermediate</option>
                 <option value="C1">C1 - Advanced</option>
             </select>
-            <select id="tense-select" style="flex:1; font-size:1.1rem; padding:8px; border-radius:10px; font-weight:bold;">
+            <select id="tense-select" style="flex:1; font-size:1rem; padding:6px; border-radius:10px; font-weight:bold;">
                 <option value="simplePast">Simple Past</option>
                 <option value="participle">Past Participle</option>
             </select>
         </div>
-        <button class="btn btn-level" style="margin-top:15px;" onclick="startHostGame()">🚀 Start Match</button>
+        <button class="btn btn-level" style="margin-top:10px; width:40%;" onclick="startHostGame()">🚀 Start Match</button>
     </div>
 
     <!-- JOIN SCREEN -->
@@ -191,18 +201,25 @@
 
     <!-- GAME OVER SCREEN -->
     <div id="gameover-screen" class="screen hidden" style="background: rgba(0,0,0,0.88);">
-        <h1 style="color: #f44336; font-size: 3.5rem;">Match Ended</h1>
-        <div id="leaderboard-results" style="width:80%; font-size:1.4rem; line-height:1.6; font-weight:bold; margin-bottom:15px;"></div>
-        <button class="btn btn-level" onclick="restartMatch()">Play Again</button>
+        <h1 style="color: #f44336; font-size: 3rem;">Match Ended</h1>
+        <div id="leaderboard-results" style="width:80%; font-size:1.2rem; line-height:1.5; font-weight:bold; margin-bottom:15px;"></div>
+        <button class="btn btn-level" style="width:40%;" onclick="restartMatch()">Play Again</button>
     </div>
 
     <!-- GAMEPLAY CANVAS -->
     <div id="gameplay-container" class="hidden">
         <div id="hud">
             <span>Players Alive: <span id="alive-count">0</span></span>
+            <div id="audio-controls">
+                <button id="bgm-toggle-btn" style="background:#ff9100; border:none; color:#fff; font-weight:bold; border-radius:12px; padding:4px 10px; cursor:pointer;" onclick="toggleBGM()">🎵 Music</button>
+                <label style="display:flex; align-items:center; gap:5px;">
+                    🔈
+                    <input type="range" id="bgm-vol-slider" min="0" max="1" step="0.05" value="0.4" style="width:70px;" oninput="adjustBGMVolume(this.value)">
+                </label>
+            </div>
         </div>
         <div id="prompt-banner">Infinitive: <span id="target-verb" style="color:#ffeb3b;">GO</span></div>
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas" width="1000" height="500"></canvas>
     </div>
 </div>
 
@@ -217,14 +234,13 @@
     ];
 
     const configuration = {
-        A1: { speed: 1.5, gap: 240 },
-        A2: { speed: 1.7, gap: 220 },
-        B1: { speed: 1.9, gap: 200 },
-        B2: { speed: 2.1, gap: 190 },
-        C1: { speed: 2.3, gap: 180 }
+        A1: { speed: 1.8, gap: 210 },
+        A2: { speed: 2.1, gap: 195 },
+        B1: { speed: 2.4, gap: 180 },
+        B2: { speed: 2.7, gap: 170 },
+        C1: { speed: 3.0, gap: 160 }
     };
 
-    // --- COMPLETE 30 VERBS PER CEFR LEVEL AND TENSE ---
     const verbDatabase = {
         A1: {
             simplePast: [
@@ -408,6 +424,101 @@
         }
     };
 
+    // --- WEB AUDIO API SYNTHESIZED SFX (NO EXTERNAL SFX FILES NEEDED) ---
+    let audioCtx = null;
+    function getAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    function playFlapSFX() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(350, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.08);
+        } catch (e) {}
+    }
+
+    // --- DUCK QUACK SFX ON BIRD DEATH ---
+    function playQuackSFX() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const filter = ctx.createBiquadFilter();
+            const gain = ctx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(380, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.32);
+
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(850, ctx.currentTime);
+            filter.Q.setValueAtTime(3.5, ctx.currentTime);
+
+            gain.gain.setValueAtTime(0.4, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.32);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + 0.32);
+        } catch (e) {}
+    }
+
+    function playScoreSFX() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+            osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.2);
+        } catch (e) {}
+    }
+
+    // BGM Audio Control Logic
+    const bgmAudio = document.getElementById('bgm');
+    bgmAudio.volume = 0.4;
+
+    function toggleBGM() {
+        if (bgmAudio.paused) {
+            bgmAudio.play().catch(() => {});
+            document.getElementById('bgm-toggle-btn').innerText = "⏸️ Pause";
+        } else {
+            bgmAudio.pause();
+            document.getElementById('bgm-toggle-btn').innerText = "🎵 Music";
+        }
+    }
+
+    function adjustBGMVolume(val) {
+        bgmAudio.volume = val;
+    }
+
     let isHost = false;
     let peer = null;
     let roomCode = "";
@@ -425,6 +536,7 @@
     let pipes = [];
     let currentVerbPair = null;
     let animationId = null;
+    let pipeIdCounter = 0;
 
     function switchScreen(fromId, toId) {
         document.getElementById(fromId).classList.add('hidden');
@@ -461,12 +573,13 @@
                 color: colorObj,
                 conn: conn,
                 bird: {
-                    x: 100 + (connectedPlayers.length * 30),
-                    y: 300,
-                    radius: 18,
+                    x: 120 + (connectedPlayers.length * 35),
+                    y: 250,
+                    radius: 17,
                     velocity: 0,
                     isAlive: true,
-                    score: 0
+                    score: 0,
+                    scoredPipes: new Set()
                 }
             };
             connectedPlayers.push(player);
@@ -476,6 +589,7 @@
             const p = connectedPlayers.find(p => p.id === conn.peer);
             if (p && p.bird.isAlive && gameActive) {
                 p.bird.velocity = FLAP_STRENGTH;
+                playFlapSFX();
             }
         }
     }
@@ -554,23 +668,26 @@
         chosenType = document.getElementById('tense-select').value;
 
         switchScreen('host-lobby-screen', 'gameplay-container');
+        bgmAudio.play().catch(() => {});
         initMatch();
     }
 
     function initMatch() {
         frameCounter = 0;
+        pipeIdCounter = 0;
         pipes = [];
         gameActive = true;
 
         connectedPlayers.forEach((p, idx) => {
-            p.bird.y = 300;
+            p.bird.y = 250;
             p.bird.velocity = 0;
             p.bird.isAlive = true;
             p.bird.score = 0;
-            p.bird.x = 100 + (idx * 25);
+            p.bird.scoredPipes = new Set();
+            p.bird.x = 120 + (idx * 30);
         });
 
-        spawnPipeSet(800);
+        spawnPipeSet(1000);
         if (animationId) cancelAnimationFrame(animationId);
         gameLoop();
     }
@@ -581,12 +698,13 @@
         currentVerbPair = pool[Math.floor(Math.random() * pool.length)];
         document.getElementById('target-verb').innerText = currentVerbPair.inf.toUpperCase();
 
-        const minHeight = 80;
-        const maxHeight = canvas.height - config.gap - minHeight - 60; // Leave room for ground
+        const minHeight = 70;
+        const maxHeight = canvas.height - config.gap - minHeight - 50;
         const topPipeHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
         const isTopCorrect = Math.random() > 0.5;
 
         pipes.push({
+            id: ++pipeIdCounter,
             x: startX,
             width: 120,
             topHeight: topPipeHeight,
@@ -597,9 +715,7 @@
         });
     }
 
-    // --- ENHANCED CANVAS BACKGROUND (SKY, CLOUDS, HILLS, GROUND) ---
     function drawEnhancedBackground(frame) {
-        // Sky Gradient
         let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         skyGrad.addColorStop(0, '#4ec0ca');
         skyGrad.addColorStop(0.7, '#81d4fa');
@@ -607,49 +723,37 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Animated Clouds
         ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
         let cloudX1 = (frame * 0.4) % (canvas.width + 200) - 100;
-        let cloudX2 = (frame * 0.2 + 300) % (canvas.width + 200) - 100;
+        let cloudX2 = (frame * 0.2 + 400) % (canvas.width + 200) - 100;
 
-        drawCloud(cloudX1, 80, 40);
-        drawCloud(cloudX2, 140, 30);
+        drawCloud(cloudX1, 60, 35);
+        drawCloud(cloudX2, 110, 25);
 
-        // Background City / Hill Skyline
         ctx.fillStyle = "#73bf2e";
         ctx.beginPath();
-        ctx.arc(150, 560, 220, Math.PI, 0, false);
-        ctx.arc(500, 570, 260, Math.PI, 0, false);
-        ctx.arc(800, 560, 200, Math.PI, 0, false);
+        ctx.arc(200, 470, 220, Math.PI, 0, false);
+        ctx.arc(650, 480, 260, Math.PI, 0, false);
+        ctx.arc(1000, 470, 200, Math.PI, 0, false);
         ctx.fill();
 
-        ctx.fillStyle = "#558000";
-        ctx.beginPath();
-        ctx.arc(320, 570, 180, Math.PI, 0, false);
-        ctx.arc(680, 580, 190, Math.PI, 0, false);
-        ctx.fill();
-
-        // Animated Ground Stripe
         const groundHeight = 50;
         const groundY = canvas.height - groundHeight;
 
-        // Ground Base
         ctx.fillStyle = "#ded895";
         ctx.fillRect(0, groundY, canvas.width, groundHeight);
 
-        // Grass Top Trim
         ctx.fillStyle = "#73bf2e";
-        ctx.fillRect(0, groundY, canvas.width, 14);
+        ctx.fillRect(0, groundY, canvas.width, 12);
         ctx.fillStyle = "#558000";
-        ctx.fillRect(0, groundY + 14, canvas.width, 4);
+        ctx.fillRect(0, groundY + 12, canvas.width, 4);
 
-        // Ground Diagonal Stripes
         ctx.strokeStyle = "#ceb86c";
         ctx.lineWidth = 6;
         let offset = (frame * 2) % 24;
         for (let x = -30 + offset; x < canvas.width + 30; x += 24) {
             ctx.beginPath();
-            ctx.moveTo(x, groundY + 18);
+            ctx.moveTo(x, groundY + 16);
             ctx.lineTo(x - 12, canvas.height);
             ctx.stroke();
         }
@@ -664,19 +768,16 @@
         ctx.fill();
     }
 
-    // --- ENHANCED 3D TUBE (MARIO STYLE PIPES WITH CAPS) ---
     function draw3DPipe(x, y, width, height, isTop) {
-        const capHeight = 32;
-        const capOverlap = 10;
+        const capHeight = 30;
+        const capOverlap = 8;
         const capWidth = width + capOverlap * 2;
         const capX = x - capOverlap;
 
-        // Determine Body and Cap Y-positions
         let bodyY = isTop ? 0 : y;
         let bodyHeight = isTop ? (height - capHeight) : height;
         let capY = isTop ? (height - capHeight) : y;
 
-        // Pipe Body Gradient (Metallic Green 3D Cylinder)
         let bodyGrad = ctx.createLinearGradient(x, 0, x + width, 0);
         bodyGrad.addColorStop(0, '#2d4500');
         bodyGrad.addColorStop(0.15, '#558000');
@@ -691,7 +792,6 @@
         ctx.lineWidth = 3;
         ctx.strokeRect(x, bodyY, width, bodyHeight);
 
-        // Pipe Cap / Rim Gradient
         let capGrad = ctx.createLinearGradient(capX, 0, capX + capWidth, 0);
         capGrad.addColorStop(0, '#2d4500');
         capGrad.addColorStop(0.15, '#558000');
@@ -704,7 +804,6 @@
         ctx.fillRect(capX, capY, capWidth, capHeight);
         ctx.strokeRect(capX, capY, capWidth, capHeight);
 
-        // Highlight Specular Lines
         ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
         ctx.fillRect(x + width * 0.22, bodyY, width * 0.08, bodyHeight);
         ctx.fillRect(capX + capWidth * 0.22, capY, capWidth * 0.08, capHeight);
@@ -720,45 +819,41 @@
         let angle = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, b.velocity * 0.08));
         ctx.rotate(angle);
 
-        // Name Tag with Background Pill
-        ctx.font = "bold 13px Arial";
+        ctx.font = "bold 12px Arial";
         let textWidth = ctx.measureText(p.name).width;
         ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(-textWidth/2 - 6, -b.radius - 22, textWidth + 12, 18);
+        ctx.fillRect(-textWidth/2 - 5, -b.radius - 20, textWidth + 10, 16);
         ctx.fillStyle = "#fff";
         ctx.textAlign = "center";
-        ctx.fillText(p.name, 0, -b.radius - 9);
+        ctx.fillText(p.name, 0, -b.radius - 8);
 
-        // Bird Body
         ctx.fillStyle = p.color.hex;
         ctx.beginPath();
-        ctx.ellipse(0, 0, b.radius + 4, b.radius, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, b.radius + 3, b.radius, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = "#000";
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Animated Wing
-        let wingOffsetY = Math.sin(frame * 0.25) * 7;
+        let wingOffsetY = Math.sin(frame * 0.25) * 6;
         ctx.fillStyle = p.color.dark;
         ctx.beginPath();
-        ctx.ellipse(-6, wingOffsetY, 11, 6, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(-5, wingOffsetY, 10, 5, -0.3, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Eye & Beak
         ctx.fillStyle = "#fff";
         ctx.beginPath();
-        ctx.arc(8, -6, 6, 0, Math.PI * 2);
+        ctx.arc(7, -5, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "#000";
         ctx.beginPath();
-        ctx.arc(10, -6, 2, 0, Math.PI * 2);
+        ctx.arc(9, -5, 2, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = "#ff5722";
         ctx.beginPath();
-        ctx.moveTo(12, 0); ctx.lineTo(22, 3); ctx.lineTo(12, 8);
+        ctx.moveTo(11, 0); ctx.lineTo(20, 3); ctx.lineTo(11, 7);
         ctx.closePath(); ctx.fill(); ctx.stroke();
 
         ctx.restore();
@@ -769,13 +864,11 @@
         frameCounter++;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Enhanced Sky & Ground Background
         drawEnhancedBackground(frameCounter);
 
         const config = configuration[chosenLevel];
         const groundY = canvas.height - 50;
 
-        // Physics Updates
         let activeCount = 0;
         connectedPlayers.forEach(p => {
             if (p.bird.isAlive) {
@@ -783,9 +876,9 @@
                 p.bird.velocity += GRAVITY;
                 p.bird.y += p.bird.velocity;
 
-                // Out of Bounds (Ceiling or Ground)
                 if (p.bird.y + p.bird.radius > groundY || p.bird.y - p.bird.radius < 0) {
                     p.bird.isAlive = false;
+                    playQuackSFX(); // DUCK QUACK ON DEATH
                 }
             }
             drawBird(p, frameCounter);
@@ -793,45 +886,57 @@
 
         document.getElementById('alive-count').innerText = activeCount;
 
-        // Pipes Logic & Rendering
         for (let i = pipes.length - 1; i >= 0; i--) {
             let pipe = pipes[i];
             pipe.x -= config.speed;
 
             let bottomY = pipe.topHeight + pipe.gap;
 
-            // Render 3D Tubes
             draw3DPipe(pipe.x, 0, pipe.width, pipe.topHeight, true);
             draw3DPipe(pipe.x, bottomY, pipe.width, groundY - bottomY, false);
 
-            // Labels with thick text shadow for high readability
             ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 24px Arial";
+            ctx.font = "bold 22px Arial";
             ctx.textAlign = "center";
             ctx.shadowColor = "black"; ctx.shadowBlur = 8;
-            ctx.fillText(pipe.topText, pipe.x + pipe.width / 2, pipe.topHeight - 45);
-            ctx.fillText(pipe.bottomText, pipe.x + pipe.width / 2, bottomY + 45);
+            ctx.fillText(pipe.topText, pipe.x + pipe.width / 2, pipe.topHeight - 40);
+            ctx.fillText(pipe.bottomText, pipe.x + pipe.width / 2, bottomY + 40);
             ctx.shadowBlur = 0;
 
-            // Collision check per player against 3D tubes
             connectedPlayers.forEach(p => {
                 if (!p.bird.isAlive) return;
 
-                if (p.bird.x + p.bird.radius > pipe.x - 10 && p.bird.x - p.bird.radius < pipe.x + pipe.width + 10) {
+                if (p.bird.x + p.bird.radius > pipe.x - 5 && p.bird.x - p.bird.radius < pipe.x + pipe.width + 5) {
                     if (p.bird.y - p.bird.radius < pipe.topHeight) {
-                        if (pipe.topIsCorrect) p.bird.score++;
-                        else p.bird.isAlive = false;
+                        if (pipe.topIsCorrect) {
+                            if (!p.bird.scoredPipes.has(pipe.id)) {
+                                p.bird.score++;
+                                playScoreSFX();
+                                p.bird.scoredPipes.add(pipe.id);
+                            }
+                        } else {
+                            p.bird.isAlive = false;
+                            playQuackSFX(); // DUCK QUACK ON WRONG PIPE
+                        }
                     } 
                     else if (p.bird.y + p.bird.radius > bottomY) {
-                        if (!pipe.topIsCorrect) p.bird.score++;
-                        else p.bird.isAlive = false;
+                        if (!pipe.topIsCorrect) {
+                            if (!p.bird.scoredPipes.has(pipe.id)) {
+                                p.bird.score++;
+                                playScoreSFX();
+                                p.bird.scoredPipes.add(pipe.id);
+                            }
+                        } else {
+                            p.bird.isAlive = false;
+                            playQuackSFX(); // DUCK QUACK ON WRONG PIPE
+                        }
                     }
                 }
             });
 
             if (pipe.x + pipe.width < 0) {
                 pipes.splice(i, 1);
-                spawnPipeSet(800);
+                spawnPipeSet(1000);
             }
         }
 
@@ -847,11 +952,11 @@
         gameActive = false;
         cancelAnimationFrame(animationId);
 
-        let resultsHTML = "<h3>Leaderboard</h3>";
+        let resultsHTML = "<h3 style='margin-bottom:10px;'>Leaderboard</h3>";
         let sorted = [...connectedPlayers].sort((a, b) => b.bird.score - a.bird.score);
         
         sorted.forEach((p, rank) => {
-            resultsHTML += `<p style="color:${p.color.hex}">${rank + 1}. ${p.name} - ${p.bird.score} pts</p>`;
+            resultsHTML += `<p style="color:${p.color.hex}; margin:4px 0;">${rank + 1}. ${p.name} - ${p.bird.score} pts</p>`;
         });
 
         document.getElementById('leaderboard-results').innerHTML = resultsHTML;
