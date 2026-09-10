@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Verbs - EFL Game</title>
+    <title>Flappy Verbs - Smartboard EFL Game</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
+            -webkit-user-select: none;
         }
         body {
             margin: 0;
-            background: #111;
+            background: #1a1a2e;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -20,14 +21,15 @@
             height: 100vh;
             overflow: hidden;
         }
+        /* Contenedor adaptado a Tablero Inteligente (800x600) */
         #game-container {
             position: relative;
-            width: 400px;
+            width: 800px;
             height: 600px;
             background: #70c5ce;
-            border: 4px solid #fff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 6px solid #fff;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
             overflow: hidden;
         }
         .screen {
@@ -40,59 +42,66 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
             z-index: 10;
         }
         .hidden { display: none !important; }
-        h1 { margin: 0 0 10px 0; text-shadow: 2px 2px #000; font-size: 2.3rem; color: #ffeb3b;}
-        h2 { margin: 0 0 15px 0; text-shadow: 1px 1px #000; font-size: 1.2rem; }
+        
+        /* Textos grandes para visualización en aula */
+        h1 { margin: 0 0 15px 0; text-shadow: 3px 3px #000; font-size: 3.5rem; color: #ffeb3b;}
+        h2 { margin: 0 0 20px 0; text-shadow: 2px 2px #000; font-size: 2rem; }
+        
+        /* Botones grandes para toque fácil con mano/lápiz */
         .btn {
             background: #ff5722;
             color: white;
             border: none;
-            padding: 12px 20px;
-            margin: 6px 0;
-            font-size: 1rem;
+            padding: 16px 28px;
+            margin: 8px 0;
+            font-size: 1.4rem;
             font-weight: bold;
-            border-radius: 25px;
+            border-radius: 35px;
             cursor: pointer;
-            width: 85%;
-            box-shadow: 0 4px #bf360c;
-            transition: transform 0.1s;
+            width: 70%;
+            box-shadow: 0 6px #bf360c;
+            transition: transform 0.1s, background-color 0.2s;
         }
-        .btn:active { transform: translateY(4px); box-shadow: 0 0px #bf360c; }
-        .btn-level { background: #4caf50; box-shadow: 0 4px #1b5e20; }
-        .btn-back { background: #757575; box-shadow: 0 4px #424242; }
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px #bf360c; }
+        .btn-level { background: #4caf50; box-shadow: 0 6px #1b5e20; }
+        .btn-back { background: #757575; box-shadow: 0 6px #424242; }
+        
         canvas { display: block; background: #70c5ce; }
+        
+        /* HUD y Banners superiores legibles desde lejos */
         #hud {
             position: absolute;
-            top: 10px;
+            top: 15px;
             left: 0;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 20px;
-            font-size: 1.3rem;
+            padding: 0 30px;
+            font-size: 1.8rem;
             font-weight: bold;
-            text-shadow: 2px 2px #000;
+            text-shadow: 3px 3px #000;
             pointer-events: none;
             z-index: 5;
         }
         #prompt-banner {
             position: absolute;
-            top: 45px;
+            top: 60px;
             left: 0;
             width: 100%;
             text-align: center;
-            font-size: 1.4rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: #fff;
-            text-shadow: 2px 2px #000;
+            text-shadow: 3px 3px #000;
             pointer-events: none;
             z-index: 5;
-            background: rgba(0,0,0,0.2);
-            padding: 5px 0;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 0;
         }
     </style>
 </head>
@@ -121,10 +130,10 @@
     </div>
 
     <!-- GAME OVER SCREEN -->
-    <div id="gameover-screen" class="screen hidden" style="background: rgba(0,0,0,0.85);">
-        <h1 style="color: #f44336;">Game Over</h1>
-        <h2 id="final-score">Score: 0</h2>
-        <p id="feedback-text" style="color: #ffeb3b; padding: 0 10px; font-size: 1.1rem; line-height: 1.4;"></p>
+    <div id="gameover-screen" class="screen hidden" style="background: rgba(0,0,0,0.88);">
+        <h1 style="color: #f44336; font-size: 4rem;">Game Over</h1>
+        <h2 id="final-score" style="font-size: 2.2rem;">Score: 0</h2>
+        <p id="feedback-text" style="color: #ffeb3b; padding: 0 20px; font-size: 1.6rem; line-height: 1.5; font-weight: bold;"></p>
         <button class="btn" onclick="restartGame()">Play Again</button>
         <button class="btn btn-level" onclick="backToHome()">Main Menu</button>
     </div>
@@ -135,12 +144,12 @@
             <span id="score-display">Score: 0</span>
         </div>
         <div id="prompt-banner">Infinitive: <span id="target-verb" style="color:#ffeb3b;">GO</span></div>
-        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
 </div>
 
 <script>
-    // --- AUDIO SYNTHESIZER (No external audio files needed) ---
+    // --- AUDIO SYNTHESIZER ---
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -156,12 +165,12 @@
         gain.connect(audioCtx.destination);
 
         if (type === 'flap') {
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.12);
             gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.stop(audioCtx.currentTime + 0.12);
         } else if (type === 'score') {
             osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
             osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
@@ -172,11 +181,11 @@
         } else if (type === 'wrong') {
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+            osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.35);
             gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
+            osc.stop(audioCtx.currentTime + 0.35);
         }
     }
 
@@ -272,21 +281,23 @@
     let score = 0;
     let gameActive = false;
 
+    // VELOCIDAD Y HUECOS REDISEÑADOS PARA MODO CLASE / TABLERO INTERACTIVO
     const configuration = {
-        A1: { speed: 2.0, gap: 180 },
-        A2: { speed: 2.3, gap: 165 },
-        B1: { speed: 2.7, gap: 150 },
-        B2: { speed: 3.1, gap: 140 },
-        C1: { speed: 3.5, gap: 130 }
+        A1: { speed: 1.0, gap: 240 },
+        A2: { speed: 1.2, gap: 220 },
+        B1: { speed: 1.4, gap: 200 },
+        B2: { speed: 1.6, gap: 190 },
+        C1: { speed: 1.8, gap: 180 }
     };
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const GRAVITY = 0.3;
-    const FLAP_STRENGTH = -6;
+    // FÍSICA RALENTIZADA A LA MITAD (SÚPER FLUIDA Y LENTA)
+    const GRAVITY = 0.12;
+    const FLAP_STRENGTH = -4.2;
 
-    let bird = { x: 60, y: 300, radius: 14, velocity: 0 };
+    let bird = { x: 120, y: 300, radius: 20, velocity: 0 };
     let pipes = [];
     let currentVerbPair = null;
     let animationId = null;
@@ -326,7 +337,7 @@
         pipes = [];
         gameActive = true;
 
-        spawnPipeSet(400);
+        spawnPipeSet(800);
 
         window.removeEventListener('keydown', handleInput);
         canvas.removeEventListener('touchstart', handleInput);
@@ -357,14 +368,14 @@
         currentVerbPair = pool[Math.floor(Math.random() * pool.length)];
         document.getElementById('target-verb').innerText = currentVerbPair.inf.toUpperCase();
 
-        const minHeight = 60;
+        const minHeight = 80;
         const maxHeight = canvas.height - config.gap - minHeight;
         const topPipeHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
         const isTopCorrect = Math.random() > 0.5;
 
         pipes.push({
             x: startX,
-            width: 75,
+            width: 125, // Tubos más anchos para mejor lectura
             topHeight: topPipeHeight,
             gap: config.gap,
             topText: isTopCorrect ? currentVerbPair.corr : currentVerbPair.incorr,
@@ -387,30 +398,30 @@
         bird.velocity += GRAVITY;
         bird.y += bird.velocity;
 
-        // Draw Player (Bird)
+        // Draw Player (Bird) - Tamaño ampliado
         ctx.fillStyle = "#ffeb3b";
         ctx.beginPath();
         ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = "#000";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Bird Eye & Beak
+        // Eye & Beak
         ctx.fillStyle = "#fff";
         ctx.beginPath();
-        ctx.arc(bird.x + 6, bird.y - 4, 4, 0, Math.PI * 2);
+        ctx.arc(bird.x + 8, bird.y - 6, 6, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "#000";
         ctx.beginPath();
-        ctx.arc(bird.x + 7, bird.y - 4, 1.5, 0, Math.PI * 2);
+        ctx.arc(bird.x + 10, bird.y - 6, 2.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "#ff5722";
         ctx.beginPath();
-        ctx.arc(bird.x + 12, bird.y + 2, 5, 0, Math.PI * 2);
+        ctx.arc(bird.x + 16, bird.y + 3, 7, 0, Math.PI * 2);
         ctx.fill();
 
-        // Floor / Ceiling Boundary
+        // Boundary Check
         if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
             triggerGameOver("Out of boundaries! Fly into the pipe with the correct verb form.");
             return;
@@ -428,7 +439,7 @@
             ctx.fillStyle = "#2e7d32";
             ctx.fillRect(p.x, 0, p.width, p.topHeight);
             ctx.strokeStyle = "#1b5e20";
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.strokeRect(p.x, 0, p.width, p.topHeight);
 
             // Bottom Pipe
@@ -436,15 +447,15 @@
             ctx.fillRect(p.x, bottomY, p.width, canvas.height - bottomY);
             ctx.strokeRect(p.x, bottomY, p.width, canvas.height - bottomY);
 
-            // Labels
+            // Labels inside Pipes - Texto de 24px para lectura clara
             ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 16px Arial";
+            ctx.font = "bold 24px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(p.topText, p.x + p.width / 2, p.topHeight - 30);
-            ctx.fillText(p.bottomText, p.x + p.width / 2, bottomY + 30);
+            ctx.fillText(p.topText, p.x + p.width / 2, p.topHeight - 40);
+            ctx.fillText(p.bottomText, p.x + p.width / 2, bottomY + 40);
 
-            // Collision Evaluation
+            // Collision Evaluation (Touch/Hit the correct pipe)
             if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + p.width) {
                 
                 // Touch Top Pipe
@@ -467,9 +478,9 @@
                 }
             }
 
-            // If player missed the pipe set entirely without touching
+            // Missed pipe entirely
             if (!p.passed && p.x + p.width < bird.x - bird.radius) {
-                triggerGameOver(`You missed it! Fly directly into the correct option. Solution for "${currentVerbPair.inf}": ${currentVerbPair.corr.toUpperCase()}`);
+                triggerGameOver(`You missed it! Fly into the correct option. Solution for "${currentVerbPair.inf}": ${currentVerbPair.corr.toUpperCase()}`);
                 return;
             }
         }
@@ -482,7 +493,7 @@
         score++;
         document.getElementById('score-display').innerText = "Score: " + score;
         pipes.splice(index, 1);
-        spawnPipeSet(400);
+        spawnPipeSet(800);
     }
 
     function triggerGameOver(reason) {
