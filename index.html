@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Verbs - EFL Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            background: #70c5ce;
+            border: 4px solid #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            z-index: 10;
+        }
+        .hidden { display: none !important; }
+        h1 { margin: 0 0 10px 0; text-shadow: 2px 2px #000; font-size: 2.3rem; color: #ffeb3b;}
+        h2 { margin: 0 0 15px 0; text-shadow: 1px 1px #000; font-size: 1.2rem; }
+        .btn {
+            background: #ff5722;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 6px 0;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            width: 85%;
+            box-shadow: 0 4px #bf360c;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: 0 0px #bf360c; }
+        .btn-level { background: #4caf50; box-shadow: 0 4px #1b5e20; }
+        .btn-back { background: #757575; box-shadow: 0 4px #424242; }
+        canvas { display: block; background: #70c5ce; }
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px #000;
+            pointer-events: none;
+            z-index: 5;
+        }
+        #prompt-banner {
+            position: absolute;
+            top: 45px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px #000;
+            pointer-events: none;
+            z-index: 5;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- HOME SCREEN -->
+    <div id="home-screen" class="screen">
+        <h1>Flappy Verbs</h1>
+        <h2>Select CEFR Level</h2>
+        <button class="btn btn-level" onclick="selectLevel('A1')">A1 - Beginner</button>
+        <button class="btn btn-level" onclick="selectLevel('A2')">A2 - Elementary</button>
+        <button class="btn btn-level" onclick="selectLevel('B1')">B1 - Intermediate</button>
+        <button class="btn btn-level" onclick="selectLevel('B2')">B2 - Upper Intermediate</button>
+        <button class="btn btn-level" onclick="selectLevel('C1')">C1 - Advanced</button>
+    </div>
+
+    <!-- VERB TYPE SCREEN -->
+    <div id="type-screen" class="screen hidden">
+        <h1>Flappy Verbs</h1>
+        <h2 id="selected-level-label">Level</h2>
+        <h2>Select Target Tense:</h2>
+        <button class="btn" onclick="selectType('simplePast')">Simple Past</button>
+        <button class="btn" onclick="selectType('participle')">Past Participle</button>
+        <button class="btn btn-back" onclick="backToHome()">⬅ Back</button>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="gameover-screen" class="screen hidden" style="background: rgba(0,0,0,0.85);">
+        <h1 style="color: #f44336;">Game Over</h1>
+        <h2 id="final-score">Score: 0</h2>
+        <p id="feedback-text" style="color: #ffeb3b; padding: 0 10px; font-size: 1.1rem; line-height: 1.4;"></p>
+        <button class="btn" onclick="restartGame()">Play Again</button>
+        <button class="btn btn-level" onclick="backToHome()">Main Menu</button>
+    </div>
+
+    <!-- GAMEPLAY CANVAS -->
+    <div id="gameplay-container" class="hidden">
+        <div id="hud">
+            <span id="score-display">Score: 0</span>
+        </div>
+        <div id="prompt-banner">Infinitive: <span id="target-verb" style="color:#ffeb3b;">GO</span></div>
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
+</div>
+
+<script>
+    // --- AUDIO SYNTHESIZER (No external audio files needed) ---
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioCtx();
+    }
+
+    function playSound(type) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'flap') {
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'score') {
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.25);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+    }
+
+    // --- VERB DATABASE ---
+    const verbDatabase = {
+        A1: {
+            simplePast: [
+                { inf: "Play", corr: "played", incorr: "playedd" },
+                { inf: "Eat", corr: "ate", incorr: "eated" },
+                { inf: "Like", corr: "liked", incorr: "liken" },
+                { inf: "Go", corr: "went", incorr: "gone" },
+                { inf: "Make", corr: "made", incorr: "maked" },
+                { inf: "Have", corr: "had", incorr: "haved" }
+            ],
+            participle: [
+                { inf: "Play", corr: "played", incorr: "playen" },
+                { inf: "Eat", corr: "eaten", incorr: "ate" },
+                { inf: "Like", corr: "liked", incorr: "liket" },
+                { inf: "Go", corr: "gone", incorr: "went" },
+                { inf: "Make", corr: "made", incorr: "maken" },
+                { inf: "Have", corr: "had", incorr: "hadder" }
+            ]
+        },
+        A2: {
+            simplePast: [
+                { inf: "Study", corr: "studied", incorr: "studyed" },
+                { inf: "Buy", corr: "bought", incorr: "buyed" },
+                { inf: "Stop", corr: "stopped", incorr: "stoped" },
+                { inf: "See", corr: "saw", incorr: "seen" },
+                { inf: "Write", corr: "wrote", incorr: "writed" }
+            ],
+            participle: [
+                { inf: "Study", corr: "studied", incorr: "studien" },
+                { inf: "Buy", corr: "bought", incorr: "boughten" },
+                { inf: "Stop", corr: "stopped", incorr: "stopt" },
+                { inf: "See", corr: "seen", incorr: "saw" },
+                { inf: "Write", corr: "written", incorr: "wrote" }
+            ]
+        },
+        B1: {
+            simplePast: [
+                { inf: "Decide", corr: "decided", incorr: "decidda" },
+                { inf: "Speak", corr: "spoke", incorr: "spaked" },
+                { inf: "Plan", corr: "planned", incorr: "planed" },
+                { inf: "Understand", corr: "understood", incorr: "understanded" },
+                { inf: "Choose", corr: "chose", incorr: "choosed" }
+            ],
+            participle: [
+                { inf: "Decide", corr: "decided", incorr: "deciden" },
+                { inf: "Speak", corr: "spoken", incorr: "spoke" },
+                { inf: "Plan", corr: "planned", incorr: "plannet" },
+                { inf: "Understand", corr: "understood", incorr: "understanden" },
+                { inf: "Choose", corr: "chosen", incorr: "chose" }
+            ]
+        },
+        B2: {
+            simplePast: [
+                { inf: "Achieve", corr: "achieved", incorr: "achieven" },
+                { inf: "Seek", corr: "sought", incorr: "seeked" },
+                { inf: "Deny", corr: "denied", incorr: "denyed" },
+                { inf: "Fly", corr: "flew", incorr: "flied" },
+                { inf: "Freeze", corr: "froze", incorr: "freezed" }
+            ],
+            participle: [
+                { inf: "Achieve", corr: "achieved", incorr: "achievedded" },
+                { inf: "Seek", corr: "sought", incorr: "soughten" },
+                { inf: "Deny", corr: "denied", incorr: "denyen" },
+                { inf: "Fly", corr: "flown", incorr: "flew" },
+                { inf: "Freeze", corr: "frozen", incorr: "froze" }
+            ]
+        },
+        C1: {
+            simplePast: [
+                { inf: "Undergo", corr: "underwent", incorr: "undergone" },
+                { inf: "Overcome", corr: "overcame", incorr: "overcomed" },
+                { inf: "Tear", corr: "tore", incorr: "teared" },
+                { inf: "Shrink", corr: "shrank", incorr: "shrunked" },
+                { inf: "Forbid", corr: "forbade", incorr: "forbid" }
+            ],
+            participle: [
+                { inf: "Undergo", corr: "undergone", incorr: "underwent" },
+                { inf: "Overcome", corr: "overcome", incorr: "overcamed" },
+                { inf: "Tear", corr: "torn", incorr: "toren" },
+                { inf: "Shrink", corr: "shrunk", incorr: "shrank" },
+                { inf: "Forbid", corr: "forbidden", incorr: "forbade" }
+            ]
+        }
+    };
+
+    // --- GAME CONFIG & STATE ---
+    let chosenLevel = 'A1';
+    let chosenType = 'simplePast';
+    let score = 0;
+    let gameActive = false;
+
+    const configuration = {
+        A1: { speed: 2.0, gap: 180 },
+        A2: { speed: 2.3, gap: 165 },
+        B1: { speed: 2.7, gap: 150 },
+        B2: { speed: 3.1, gap: 140 },
+        C1: { speed: 3.5, gap: 130 }
+    };
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const GRAVITY = 0.3;
+    const FLAP_STRENGTH = -6;
+
+    let bird = { x: 60, y: 300, radius: 14, velocity: 0 };
+    let pipes = [];
+    let currentVerbPair = null;
+    let animationId = null;
+
+    // --- SCREEN NAVIGATION ---
+    function selectLevel(lvl) {
+        initAudio();
+        chosenLevel = lvl;
+        document.getElementById('selected-level-label').innerText = "Level: " + lvl;
+        switchScreen('home-screen', 'type-screen');
+    }
+
+    function selectType(type) {
+        chosenType = type;
+        switchScreen('type-screen', 'gameplay-container');
+        initGame();
+    }
+
+    function backToHome() {
+        document.getElementById('type-screen').classList.add('hidden');
+        document.getElementById('gameover-screen').classList.add('hidden');
+        document.getElementById('gameplay-container').classList.add('hidden');
+        document.getElementById('home-screen').classList.remove('hidden');
+    }
+
+    function switchScreen(fromId, toId) {
+        document.getElementById(fromId).classList.add('hidden');
+        document.getElementById(toId).classList.remove('hidden');
+    }
+
+    // --- CORE GAME LOGIC ---
+    function initGame() {
+        score = 0;
+        document.getElementById('score-display').innerText = "Score: " + score;
+        bird.y = 300;
+        bird.velocity = 0;
+        pipes = [];
+        gameActive = true;
+
+        spawnPipeSet(400);
+
+        window.removeEventListener('keydown', handleInput);
+        canvas.removeEventListener('touchstart', handleInput);
+        canvas.removeEventListener('mousedown', handleInput);
+
+        window.addEventListener('keydown', handleInput);
+        canvas.addEventListener('touchstart', handleInput, { passive: false });
+        canvas.addEventListener('mousedown', handleInput);
+
+        if (animationId) cancelAnimationFrame(animationId);
+        gameLoop();
+    }
+
+    function handleInput(e) {
+        if (e.type === 'keydown' && e.code !== 'Space') return;
+        if (!gameActive) return;
+        
+        if (e.type === 'touchstart') e.preventDefault();
+
+        bird.velocity = FLAP_STRENGTH;
+        playSound('flap');
+    }
+
+    function spawnPipeSet(startX) {
+        const config = configuration[chosenLevel];
+        const pool = verbDatabase[chosenLevel][chosenType];
+        
+        currentVerbPair = pool[Math.floor(Math.random() * pool.length)];
+        document.getElementById('target-verb').innerText = currentVerbPair.inf.toUpperCase();
+
+        const minHeight = 60;
+        const maxHeight = canvas.height - config.gap - minHeight;
+        const topPipeHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+        const isTopCorrect = Math.random() > 0.5;
+
+        pipes.push({
+            x: startX,
+            width: 75,
+            topHeight: topPipeHeight,
+            gap: config.gap,
+            topText: isTopCorrect ? currentVerbPair.corr : currentVerbPair.incorr,
+            bottomText: isTopCorrect ? currentVerbPair.incorr : currentVerbPair.corr,
+            topIsCorrect: isTopCorrect,
+            passed: false
+        });
+    }
+
+    function gameLoop() {
+        if (!gameActive) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Background
+        ctx.fillStyle = "#70c5ce";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Physics
+        bird.velocity += GRAVITY;
+        bird.y += bird.velocity;
+
+        // Draw Player (Bird)
+        ctx.fillStyle = "#ffeb3b";
+        ctx.beginPath();
+        ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Bird Eye & Beak
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(bird.x + 6, bird.y - 4, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(bird.x + 7, bird.y - 4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ff5722";
+        ctx.beginPath();
+        ctx.arc(bird.x + 12, bird.y + 2, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Floor / Ceiling Boundary
+        if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
+            triggerGameOver("Out of boundaries! Fly into the pipe with the correct verb form.");
+            return;
+        }
+
+        const config = configuration[chosenLevel];
+
+        for (let i = pipes.length - 1; i >= 0; i--) {
+            let p = pipes[i];
+            p.x -= config.speed;
+
+            let bottomY = p.topHeight + p.gap;
+
+            // Top Pipe
+            ctx.fillStyle = "#2e7d32";
+            ctx.fillRect(p.x, 0, p.width, p.topHeight);
+            ctx.strokeStyle = "#1b5e20";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(p.x, 0, p.width, p.topHeight);
+
+            // Bottom Pipe
+            ctx.fillStyle = "#2e7d32";
+            ctx.fillRect(p.x, bottomY, p.width, canvas.height - bottomY);
+            ctx.strokeRect(p.x, bottomY, p.width, canvas.height - bottomY);
+
+            // Labels
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(p.topText, p.x + p.width / 2, p.topHeight - 30);
+            ctx.fillText(p.bottomText, p.x + p.width / 2, bottomY + 30);
+
+            // Collision Evaluation
+            if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + p.width) {
+                
+                // Touch Top Pipe
+                if (bird.y - bird.radius < p.topHeight) {
+                    if (p.topIsCorrect) {
+                        scorePoint(i);
+                    } else {
+                        triggerGameOver(`Wrong! For "${currentVerbPair.inf}", the correct form is: ${currentVerbPair.corr.toUpperCase()}`);
+                        return;
+                    }
+                } 
+                // Touch Bottom Pipe
+                else if (bird.y + bird.radius > bottomY) {
+                    if (!p.topIsCorrect) {
+                        scorePoint(i);
+                    } else {
+                        triggerGameOver(`Wrong! For "${currentVerbPair.inf}", the correct form is: ${currentVerbPair.corr.toUpperCase()}`);
+                        return;
+                    }
+                }
+            }
+
+            // If player missed the pipe set entirely without touching
+            if (!p.passed && p.x + p.width < bird.x - bird.radius) {
+                triggerGameOver(`You missed it! Fly directly into the correct option. Solution for "${currentVerbPair.inf}": ${currentVerbPair.corr.toUpperCase()}`);
+                return;
+            }
+        }
+
+        animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function scorePoint(index) {
+        playSound('score');
+        score++;
+        document.getElementById('score-display').innerText = "Score: " + score;
+        pipes.splice(index, 1);
+        spawnPipeSet(400);
+    }
+
+    function triggerGameOver(reason) {
+        gameActive = false;
+        playSound('wrong');
+        cancelAnimationFrame(animationId);
+        document.getElementById('final-score').innerText = "Final Score: " + score;
+        document.getElementById('feedback-text').innerText = reason;
+        switchScreen('gameplay-container', 'gameover-screen');
+    }
+
+    function restartGame() {
+        switchScreen('gameover-screen', 'gameplay-container');
+        initGame();
+    }
+</script>
+</body>
+</html>
