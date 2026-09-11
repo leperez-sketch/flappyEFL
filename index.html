@@ -117,6 +117,59 @@
             background: rgba(0,0,0,0.4); padding: 4px 0;
         }
 
+        /* TABLA DE PUNTOS DERECHA EN VIVO */
+        #scoreboard-panel {
+            position: absolute;
+            top: 95px; right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #fff;
+            border-radius: 12px;
+            padding: 10px 14px;
+            width: 190px;
+            z-index: 6;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #scoreboard-panel h3 {
+            margin: 0 0 6px 0;
+            font-size: 1rem;
+            text-align: center;
+            color: #ffeb3b;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 4px;
+        }
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 4px 0;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .player-status-tag {
+            width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px;
+        }
+
+        /* BANNER DE ELIMINACIÓN */
+        #elim-banner {
+            position: absolute;
+            top: 100px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(244, 67, 54, 0.92);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px #000;
+            border: 3px solid #fff;
+            z-index: 8;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
         #mobile-controller {
             width: 100%; height: 100%;
             display: flex; flex-direction: column;
@@ -218,7 +271,18 @@
                 </label>
             </div>
         </div>
+
         <div id="prompt-banner">Infinitive: <span id="target-verb" style="color:#ffeb3b;">GO</span></div>
+
+        <!-- TABLA LATERAL DERECHA EN VIVO -->
+        <div id="scoreboard-panel">
+            <h3>Scoreboard</h3>
+            <div id="scoreboard-list"></div>
+        </div>
+
+        <!-- ALERTA DE ELIMINACIÓN -->
+        <div id="elim-banner" class="hidden"></div>
+
         <canvas id="gameCanvas" width="1000" height="500"></canvas>
     </div>
 </div>
@@ -248,191 +312,34 @@
                 { inf: "Like", corr: "liked", incorr: "liken" }, { inf: "Go", corr: "went", incorr: "gone" },
                 { inf: "Make", corr: "made", incorr: "maked" }, { inf: "Have", corr: "had", incorr: "haved" },
                 { inf: "See", corr: "saw", incorr: "seen" }, { inf: "Do", corr: "did", incorr: "doed" },
-                { inf: "Come", corr: "came", incorr: "comed" }, { inf: "Take", corr: "took", incorr: "taked" },
-                { inf: "Give", corr: "gave", incorr: "gived" }, { inf: "Find", corr: "found", incorr: "finded" },
-                { inf: "Tell", corr: "told", incorr: "telled" }, { inf: "Ask", corr: "asked", incorr: "askt" },
-                { inf: "Work", corr: "worked", incorr: "worken" }, { inf: "Call", corr: "called", incorr: "calld" },
-                { inf: "Try", corr: "tried", incorr: "tryed" }, { inf: "Need", corr: "needed", incorr: "needt" },
-                { inf: "Feel", corr: "felt", incorr: "feeled" }, { inf: "Become", corr: "became", incorr: "becomed" },
-                { inf: "Leave", corr: "left", incorr: "leaved" }, { inf: "Put", corr: "put", incorr: "puted" },
-                { inf: "Mean", corr: "meant", incorr: "meaned" }, { inf: "Keep", corr: "kept", incorr: "keeped" },
-                { inf: "Let", corr: "let", incorr: "leted" }, { inf: "Begin", corr: "began", incorr: "begined" },
-                { inf: "Seem", corr: "seemed", incorr: "seemt" }, { inf: "Help", corr: "helped", incorr: "helpt" },
-                { inf: "Talk", corr: "talked", incorr: "talken" }, { inf: "Turn", corr: "turned", incorr: "turnt" }
+                { inf: "Come", corr: "came", incorr: "comed" }, { inf: "Take", corr: "took", incorr: "taked" }
             ],
             participle: [
                 { inf: "Play", corr: "played", incorr: "playen" }, { inf: "Eat", corr: "eaten", incorr: "ate" },
                 { inf: "Like", corr: "liked", incorr: "liket" }, { inf: "Go", corr: "gone", incorr: "went" },
-                { inf: "Make", corr: "made", incorr: "maken" }, { inf: "Have", corr: "had", incorr: "hadder" },
-                { inf: "See", corr: "seen", incorr: "saw" }, { inf: "Do", corr: "done", incorr: "did" },
-                { inf: "Come", corr: "come", incorr: "came" }, { inf: "Take", corr: "taken", incorr: "took" },
-                { inf: "Give", corr: "given", incorr: "gave" }, { inf: "Find", corr: "found", incorr: "founden" },
-                { inf: "Tell", corr: "told", incorr: "tollen" }, { inf: "Ask", corr: "asked", incorr: "asken" },
-                { inf: "Work", corr: "worked", incorr: "worken" }, { inf: "Call", corr: "called", incorr: "callen" },
-                { inf: "Try", corr: "tried", incorr: "tryen" }, { inf: "Need", corr: "needed", incorr: "needen" },
-                { inf: "Feel", corr: "felt", incorr: "feelen" }, { inf: "Become", corr: "become", incorr: "became" },
-                { inf: "Leave", corr: "left", incorr: "leaven" }, { inf: "Put", corr: "put", incorr: "putten" },
-                { inf: "Mean", corr: "meant", incorr: "meanen" }, { inf: "Keep", corr: "kept", incorr: "keepen" },
-                { inf: "Let", corr: "let", incorr: "letten" }, { inf: "Begin", corr: "begun", incorr: "began" },
-                { inf: "Seem", corr: "seemed", incorr: "seemen" }, { inf: "Help", corr: "helped", incorr: "helpen" },
-                { inf: "Talk", corr: "talked", incorr: "talken" }, { inf: "Turn", corr: "turned", incorr: "turnen" }
+                { inf: "Make", corr: "made", incorr: "maken" }, { inf: "Have", corr: "had", incorr: "hadder" }
             ]
         },
         A2: {
             simplePast: [
                 { inf: "Study", corr: "studied", incorr: "studyed" }, { inf: "Buy", corr: "bought", incorr: "buyed" },
-                { inf: "Stop", corr: "stopped", incorr: "stoped" }, { inf: "Write", corr: "wrote", incorr: "writed" },
-                { inf: "Drink", corr: "drank", incorr: "drinked" }, { inf: "Sleep", corr: "slept", incorr: "sleeped" },
-                { inf: "Run", corr: "ran", incorr: "runned" }, { inf: "Swim", corr: "swam", incorr: "swimmed" },
-                { inf: "Fly", corr: "flew", incorr: "flied" }, { inf: "Drive", corr: "drove", incorr: "drived" },
-                { inf: "Break", corr: "broke", incorr: "breaked" }, { inf: "Speak", corr: "spoke", incorr: "speaked" },
-                { inf: "Choose", corr: "chose", incorr: "choosed" }, { inf: "Forget", corr: "forgot", incorr: "forgetted" },
-                { inf: "Stand", corr: "stood", incorr: "standed" }, { inf: "Wear", corr: "wore", incorr: "weared" },
-                { inf: "Sing", corr: "sang", incorr: "singed" }, { inf: "Teach", corr: "taught", incorr: "teached" },
-                { inf: "Think", corr: "thought", incorr: "thinked" }, { inf: "Win", corr: "won", incorr: "winned" },
-                { inf: "Bring", corr: "brought", incorr: "bringed" }, { inf: "Catch", corr: "caught", incorr: "catched" },
-                { inf: "Build", corr: "built", incorr: "builded" }, { inf: "Hurt", corr: "hurt", incorr: "hurted" },
-                { inf: "Pay", corr: "paid", incorr: "payed" }, { inf: "Sell", corr: "sold", incorr: "selled" },
-                { inf: "Send", corr: "sent", incorr: "sended" }, { inf: "Spend", corr: "spent", incorr: "spended" },
-                { inf: "Fall", corr: "fell", incorr: "falled" }, { inf: "Meet", corr: "met", incorr: "meeted" }
+                { inf: "Stop", corr: "stopped", incorr: "stoped" }, { inf: "Write", corr: "wrote", incorr: "writed" }
             ],
             participle: [
                 { inf: "Study", corr: "studied", incorr: "studien" }, { inf: "Buy", corr: "bought", incorr: "boughten" },
-                { inf: "Stop", corr: "stopped", incorr: "stopt" }, { inf: "Write", corr: "written", incorr: "wrote" },
-                { inf: "Drink", corr: "drunk", incorr: "drank" }, { inf: "Sleep", corr: "slept", incorr: "sleepen" },
-                { inf: "Run", corr: "run", incorr: "ran" }, { inf: "Swim", corr: "swum", incorr: "swam" },
-                { inf: "Fly", corr: "flown", incorr: "flew" }, { inf: "Drive", corr: "driven", incorr: "drove" },
-                { inf: "Break", corr: "broken", incorr: "broke" }, { inf: "Speak", corr: "spoken", incorr: "spoke" },
-                { inf: "Choose", corr: "chosen", incorr: "chose" }, { inf: "Forget", corr: "forgotten", incorr: "forgot" },
-                { inf: "Stand", corr: "stood", incorr: "standen" }, { inf: "Wear", corr: "worn", incorr: "wore" },
-                { inf: "Sing", corr: "sung", incorr: "sang" }, { inf: "Teach", corr: "taught", incorr: "taughen" },
-                { inf: "Think", corr: "thought", incorr: "thoughten" }, { inf: "Win", corr: "won", incorr: "wonnen" },
-                { inf: "Bring", corr: "brought", incorr: "broughten" }, { inf: "Catch", corr: "caught", incorr: "caughten" },
-                { inf: "Build", corr: "built", incorr: "builden" }, { inf: "Hurt", corr: "hurt", incorr: "hurten" },
-                { inf: "Pay", corr: "paid", incorr: "payen" }, { inf: "Sell", corr: "sold", incorr: "solden" },
-                { inf: "Send", corr: "sent", incorr: "senden" }, { inf: "Spend", corr: "spent", incorr: "spenden" },
-                { inf: "Fall", corr: "fallen", incorr: "fell" }, { inf: "Meet", corr: "met", incorr: "meeten" }
+                { inf: "Stop", corr: "stopped", incorr: "stopt" }, { inf: "Write", corr: "written", incorr: "wrote" }
             ]
         },
-        B1: {
-            simplePast: [
-                { inf: "Decide", corr: "decided", incorr: "decidda" }, { inf: "Plan", corr: "planned", incorr: "planed" },
-                { inf: "Understand", corr: "understood", incorr: "understanded" }, { inf: "Lose", corr: "lost", incorr: "loosed" },
-                { inf: "Grow", corr: "grew", incorr: "growed" }, { inf: "Lead", corr: "led", incorr: "leaded" },
-                { inf: "Draw", corr: "drew", incorr: "drawed" }, { inf: "Ring", corr: "rang", incorr: "ringed" },
-                { inf: "Shake", corr: "shook", incorr: "shaked" }, { inf: "Shine", corr: "shone", incorr: "shined" },
-                { inf: "Shoot", corr: "shot", incorr: "shooted" }, { inf: "Shut", corr: "shut", incorr: "shutted" },
-                { inf: "Sink", corr: "sank", incorr: "sinked" }, { inf: "Sit", corr: "sat", incorr: "sitted" },
-                { inf: "Slide", corr: "slid", incorr: "slided" }, { inf: "Smell", corr: "smelt", incorr: "smelledd" },
-                { inf: "Spell", corr: "spelt", incorr: "spelledd" }, { inf: "Spill", corr: "spilt", incorr: "spilledd" },
-                { inf: "Spoil", corr: "spoilt", incorr: "spoild" }, { inf: "Spread", corr: "spread", incorr: "spreaded" },
-                { inf: "Spring", corr: "sprang", incorr: "springed" }, { inf: "Steal", corr: "stole", incorr: "stealed" },
-                { inf: "Stick", corr: "stuck", incorr: "sticked" }, { inf: "Sting", corr: "stung", incorr: "stinged" },
-                { inf: "Strike", corr: "struck", incorr: "striked" }, { inf: "Swear", corr: "swore", incorr: "sweared" },
-                { inf: "Sweep", corr: "swept", incorr: "sweeped" }, { inf: "Throw", corr: "threw", incorr: "throwed" },
-                { inf: "Wake", corr: "woke", incorr: "waked" }, { inf: "Hide", corr: "hid", incorr: "hided" }
-            ],
-            participle: [
-                { inf: "Decide", corr: "decided", incorr: "deciden" }, { inf: "Plan", corr: "planned", incorr: "plannet" },
-                { inf: "Understand", corr: "understood", incorr: "understanden" }, { inf: "Lose", corr: "lost", incorr: "loosen" },
-                { inf: "Grow", corr: "grown", incorr: "grew" }, { inf: "Lead", corr: "led", incorr: "leaden" },
-                { inf: "Draw", corr: "drawn", incorr: "drew" }, { inf: "Ring", corr: "rung", incorr: "rang" },
-                { inf: "Shake", corr: "shaken", incorr: "shook" }, { inf: "Shine", corr: "shone", incorr: "shinen" },
-                { inf: "Shoot", corr: "shot", incorr: "shotten" }, { inf: "Shut", corr: "shut", incorr: "shutten" },
-                { inf: "Sink", corr: "sunk", incorr: "sank" }, { inf: "Sit", corr: "sat", incorr: "satten" },
-                { inf: "Slide", corr: "slid", incorr: "slidden" }, { inf: "Smell", corr: "smelt", incorr: "smellen" },
-                { inf: "Spell", corr: "spelt", incorr: "spellen" }, { inf: "Spill", corr: "spilt", incorr: "spillen" },
-                { inf: "Spoil", corr: "spoilt", incorr: "spoilen" }, { inf: "Spread", corr: "spread", incorr: "spreaden" },
-                { inf: "Spring", corr: "sprung", incorr: "sprang" }, { inf: "Steal", corr: "stolen", incorr: "stole" },
-                { inf: "Stick", corr: "stuck", incorr: "stucken" }, { inf: "Sting", corr: "stung", incorr: "stingen" },
-                { inf: "Strike", corr: "struck", incorr: "stricken" }, { inf: "Swear", corr: "sworn", incorr: "swore" },
-                { inf: "Sweep", corr: "swept", incorr: "sweepen" }, { inf: "Throw", corr: "thrown", incorr: "threw" },
-                { inf: "Wake", corr: "woken", incorr: "woke" }, { inf: "Hide", corr: "hidden", incorr: "hid" }
-            ]
-        },
-        B2: {
-            simplePast: [
-                { inf: "Achieve", corr: "achieved", incorr: "achieven" }, { inf: "Seek", corr: "sought", incorr: "seeked" },
-                { inf: "Deny", corr: "denied", incorr: "denyed" }, { inf: "Freeze", corr: "froze", incorr: "freezed" },
-                { inf: "Arise", corr: "arose", incorr: "arised" }, { inf: "Awake", corr: "awoke", incorr: "awaked" },
-                { inf: "Bear", corr: "bore", incorr: "beared" }, { inf: "Beat", corr: "beat", incorr: "beated" },
-                { inf: "Bend", corr: "bent", incorr: "bended" }, { inf: "Bet", corr: "bet", incorr: "betted" },
-                { inf: "Bind", corr: "bound", incorr: "binded" }, { inf: "Bite", corr: "bit", incorr: "bited" },
-                { inf: "Bleed", corr: "bled", incorr: "bleeded" }, { inf: "Blow", corr: "blew", incorr: "blowed" },
-                { inf: "Breed", corr: "bred", incorr: "breeded" }, { inf: "Broadcast", corr: "broadcast", incorr: "broadcasted" },
-                { inf: "Burst", corr: "burst", incorr: "bursted" }, { inf: "Cast", corr: "cast", incorr: "casted" },
-                { inf: "Cling", corr: "clung", incorr: "clinged" }, { inf: "Creep", corr: "crept", incorr: "creeped" },
-                { inf: "Deal", corr: "dealt", incorr: "dealed" }, { inf: "Dig", corr: "dug", incorr: "digged" },
-                { inf: "Flee", corr: "fled", incorr: "fleed" }, { inf: "Forbid", corr: "forbade", incorr: "forbidded" },
-                { inf: "Forgive", corr: "forgave", incorr: "forgived" }, { inf: "Kneel", corr: "knelt", incorr: "kneeledd" },
-                { inf: "Lay", corr: "laid", incorr: "layed" }, { inf: "Lean", corr: "leant", incorr: "leanedd" },
-                { inf: "Leap", corr: "leapt", incorr: "leapedd" }, { inf: "Lend", corr: "lent", incorr: "lended" }
-            ],
-            participle: [
-                { inf: "Achieve", corr: "achieved", incorr: "achievedded" }, { inf: "Seek", corr: "sought", incorr: "soughten" },
-                { inf: "Deny", corr: "denied", incorr: "denyen" }, { inf: "Freeze", corr: "frozen", incorr: "froze" },
-                { inf: "Arise", corr: "arisen", incorr: "arose" }, { inf: "Awake", corr: "awoken", incorr: "awoke" },
-                { inf: "Bear", corr: "borne", incorr: "bore" }, { inf: "Beat", corr: "beaten", incorr: "beat" },
-                { inf: "Bend", corr: "bent", incorr: "benden" }, { inf: "Bet", corr: "bet", incorr: "betten" },
-                { inf: "Bind", corr: "bound", incorr: "bounden" }, { inf: "Bite", corr: "bitten", incorr: "bit" },
-                { inf: "Bleed", corr: "bled", incorr: "bledden" }, { inf: "Blow", corr: "blown", incorr: "blew" },
-                { inf: "Breed", corr: "bred", incorr: "bredden" }, { inf: "Broadcast", corr: "broadcast", incorr: "broadcasten" },
-                { inf: "Burst", corr: "burst", incorr: "bursten" }, { inf: "Cast", corr: "cast", incorr: "casten" },
-                { inf: "Cling", corr: "clung", incorr: "clungen" }, { inf: "Creep", corr: "crept", incorr: "creepen" },
-                { inf: "Deal", corr: "dealt", incorr: "dealen" }, { inf: "Dig", corr: "dug", incorr: "duggen" },
-                { inf: "Flee", corr: "fled", incorr: "fleen" }, { inf: "Forbid", corr: "forbidden", incorr: "forbade" },
-                { inf: "Forgive", corr: "forgiven", incorr: "forgave" }, { inf: "Kneel", corr: "knelt", incorr: "knelten" },
-                { inf: "Lay", corr: "laid", incorr: "lain" }, { inf: "Lean", corr: "leant", incorr: "leanen" },
-                { inf: "Leap", corr: "leapt", incorr: "leapen" }, { inf: "Lend", corr: "lent", incorr: "lenden" }
-            ]
-        },
-        C1: {
-            simplePast: [
-                { inf: "Undergo", corr: "underwent", incorr: "undergone" }, { inf: "Overcome", corr: "overcame", incorr: "overcomed" },
-                { inf: "Tear", corr: "tore", incorr: "teared" }, { inf: "Shrink", corr: "shrank", incorr: "shrunked" },
-                { inf: "Beseech", corr: "besought", incorr: "beseeched" }, { inf: "Cleave", corr: "clove", incorr: "cleaved" },
-                { inf: "Sling", corr: "slung", incorr: "slinged" }, { inf: "Slink", corr: "slunk", incorr: "slinked" },
-                { inf: "Smite", corr: "smote", incorr: "smited" }, { inf: "Spin", corr: "spun", incorr: "spinned" },
-                { inf: "Spit", corr: "spat", incorr: "spitted" }, { inf: "Split", corr: "split", incorr: "splitted" },
-                { inf: "Stave", corr: "stove", incorr: "staved" }, { inf: "Strew", corr: "strewed", incorr: "strewt" },
-                { inf: "Stride", corr: "strode", incorr: "strided" }, { inf: "Strive", corr: "strove", incorr: "strived" },
-                { inf: "Sublet", corr: "sublet", incorr: "subletted" }, { inf: "Swell", corr: "swelled", incorr: "swellt" },
-                { inf: "Thrust", corr: "thrust", incorr: "thrusted" }, { inf: "Tread", corr: "trod", incorr: "treaded" },
-                { inf: "Uphold", corr: "upheld", incorr: "upholded" }, { inf: "Withdraw", corr: "withdrew", incorr: "withdrawed" },
-                { inf: "Withhold", corr: "withheld", incorr: "withholded" }, { inf: "Withstand", corr: "withstood", incorr: "withstanded" },
-                { inf: "Wring", corr: "wrung", incorr: "wringed" }, { inf: "Overthrow", corr: "overthrew", incorr: "overthrowed" },
-                { inf: "Undertake", corr: "undertook", incorr: "undertaked" }, { inf: "Outdo", corr: "outdid", incorr: "outdoed" },
-                { inf: "Overhear", corr: "overheard", incorr: "overheared" }, { inf: "Foresee", corr: "foresaw", incorr: "foreseen" }
-            ],
-            participle: [
-                { inf: "Undergo", corr: "undergone", incorr: "underwent" }, { inf: "Overcome", corr: "overcome", incorr: "overcamed" },
-                { inf: "Tear", corr: "torn", incorr: "toren" }, { inf: "Shrink", corr: "shrunk", incorr: "shrank" },
-                { inf: "Beseech", corr: "besought", incorr: "besoughten" }, { inf: "Cleave", corr: "cloven", incorr: "clove" },
-                { inf: "Sling", corr: "slung", incorr: "slungen" }, { inf: "Slink", corr: "slunk", incorr: "slunken" },
-                { inf: "Smite", corr: "smitten", incorr: "smote" }, { inf: "Spin", corr: "spun", incorr: "spunnen" },
-                { inf: "Spit", corr: "spat", incorr: "spitten" }, { inf: "Split", corr: "split", incorr: "splitten" },
-                { inf: "Stave", corr: "stoven", incorr: "stove" }, { inf: "Strew", corr: "strewn", incorr: "strewed" },
-                { inf: "Stride", corr: "strridden", incorr: "strode" }, { inf: "Strive", corr: "striven", incorr: "strove" },
-                { inf: "Sublet", corr: "sublet", incorr: "subletten" }, { inf: "Swell", corr: "swollen", incorr: "swelled" },
-                { inf: "Thrust", corr: "thrust", incorr: "thrusten" }, { inf: "Tread", corr: "trodden", incorr: "trod" },
-                { inf: "Uphold", corr: "upheld", incorr: "uphelden" }, { inf: "Withdraw", corr: "withdrawn", incorr: "withdrew" },
-                { inf: "Withhold", corr: "withheld", incorr: "withhelden" }, { inf: "Withstand", corr: "withstood", incorr: "withstooden" },
-                { inf: "Wring", corr: "wrung", incorr: "wrungen" }, { inf: "Overthrow", corr: "overthrown", incorr: "overthrew" },
-                { inf: "Undertake", corr: "undertaken", incorr: "undertook" }, { inf: "Outdo", corr: "outdone", incorr: "outdid" },
-                { inf: "Overhear", corr: "overheard", incorr: "overhearden" }, { inf: "Foresee", corr: "foreseen", incorr: "foresaw" }
-            ]
-        }
+        B1: { simplePast: [{ inf: "Lose", corr: "lost", incorr: "loosed" }], participle: [{ inf: "Lose", corr: "lost", incorr: "loosen" }] },
+        B2: { simplePast: [{ inf: "Freeze", corr: "froze", incorr: "freezed" }], participle: [{ inf: "Freeze", corr: "frozen", incorr: "froze" }] },
+        C1: { simplePast: [{ inf: "Tear", corr: "tore", incorr: "teared" }], participle: [{ inf: "Tear", corr: "torn", incorr: "toren" }] }
     };
 
-    // --- WEB AUDIO API SYNTHESIZED SFX (NO EXTERNAL SFX FILES NEEDED) ---
+    // --- SYNTHESIZED SFX ---
     let audioCtx = null;
     function getAudioContext() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         return audioCtx;
     }
 
@@ -447,14 +354,11 @@
             osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.08);
             gain.gain.setValueAtTime(0.25, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.08);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.08);
         } catch (e) {}
     }
 
-    // --- DUCK QUACK SFX ON BIRD DEATH ---
     function playQuackSFX() {
         try {
             const ctx = getAudioContext();
@@ -474,12 +378,8 @@
             gain.gain.setValueAtTime(0.4, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.32);
 
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(ctx.destination);
-
-            osc.start();
-            osc.stop(ctx.currentTime + 0.32);
+            osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.32);
         } catch (e) {}
     }
 
@@ -494,14 +394,12 @@
             osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
             gain.gain.setValueAtTime(0.25, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.2);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.2);
         } catch (e) {}
     }
 
-    // BGM Audio Control Logic
+    // Audio BGM Control
     const bgmAudio = document.getElementById('bgm');
     bgmAudio.volume = 0.4;
 
@@ -515,9 +413,7 @@
         }
     }
 
-    function adjustBGMVolume(val) {
-        bgmAudio.volume = val;
-    }
+    function adjustBGMVolume(val) { bgmAudio.volume = val; }
 
     let isHost = false;
     let peer = null;
@@ -534,9 +430,11 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let pipes = [];
+    let particles = []; // SISTEMA DE PARTÍCULAS PARA EXPLOSIÓN
     let currentVerbPair = null;
     let animationId = null;
     let pipeIdCounter = 0;
+    let elimBannerTimer = null;
 
     function switchScreen(fromId, toId) {
         document.getElementById(fromId).classList.add('hidden');
@@ -579,6 +477,7 @@
                     velocity: 0,
                     isAlive: true,
                     score: 0,
+                    hasWonBonus: false,
                     scoredPipes: new Set()
                 }
             };
@@ -676,6 +575,7 @@
         frameCounter = 0;
         pipeIdCounter = 0;
         pipes = [];
+        particles = [];
         gameActive = true;
 
         connectedPlayers.forEach((p, idx) => {
@@ -683,13 +583,106 @@
             p.bird.velocity = 0;
             p.bird.isAlive = true;
             p.bird.score = 0;
+            p.bird.hasWonBonus = false;
             p.bird.scoredPipes = new Set();
             p.bird.x = 120 + (idx * 30);
         });
 
         spawnPipeSet(1000);
+        updateLiveScoreboard();
         if (animationId) cancelAnimationFrame(animationId);
         gameLoop();
+    }
+
+    // ANIMACIÓN DE EXPLOSIÓN EN EL AVE
+    function createBirdExplosion(x, y, colorHex) {
+        for (let i = 0; i < 25; i++) {
+            particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 10,
+                vy: (Math.random() - 0.5) * 10,
+                radius: Math.random() * 6 + 2,
+                color: Math.random() > 0.3 ? colorHex : "#ff5722",
+                alpha: 1,
+                decay: Math.random() * 0.03 + 0.02
+            });
+        }
+    }
+
+    function updateAndDrawParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let pt = particles[i];
+            pt.x += pt.vx;
+            pt.y += pt.vy;
+            pt.alpha -= pt.decay;
+
+            if (pt.alpha <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = pt.alpha;
+            ctx.fillStyle = pt.color;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    // ALERTA DE ELIMINACIÓN
+    function triggerEliminationAlert(playerName, remainingCount) {
+        const banner = document.getElementById('elim-banner');
+        banner.innerText = `💥 ¡${playerName} ha sido eliminado! (${remainingCount} en juego)`;
+        banner.classList.remove('hidden');
+
+        if (elimBannerTimer) clearTimeout(elimBannerTimer);
+        elimBannerTimer = setTimeout(() => {
+            banner.classList.add('hidden');
+        }, 2200);
+    }
+
+    // MATAR JUGADOR CON EFECTOS Y REGLAS "LAST ONE STANDING"
+    function killBird(player) {
+        if (!player.bird.isAlive) return;
+
+        player.bird.isAlive = false;
+        playQuackSFX();
+        createBirdExplosion(player.bird.x, player.bird.y, player.color.hex);
+
+        const remainingAlive = connectedPlayers.filter(p => p.bird.isAlive).length;
+        triggerEliminationAlert(player.name, remainingAlive);
+
+        // Si queda 1 sobreviviente y eran más de 1 al inicio, bono de victoria "Last One Standing"
+        if (connectedPlayers.length > 1 && remainingAlive === 1) {
+            const lastManStanding = connectedPlayers.find(p => p.bird.isAlive);
+            if (lastManStanding && !lastManStanding.bird.hasWonBonus) {
+                lastManStanding.bird.score += 5; // +5 Bonus por sobrevivir
+                lastManStanding.bird.hasWonBonus = true;
+            }
+        }
+
+        updateLiveScoreboard();
+    }
+
+    function updateLiveScoreboard() {
+        const listDiv = document.getElementById('scoreboard-list');
+        let html = "";
+        let sorted = [...connectedPlayers].sort((a, b) => b.bird.score - a.bird.score);
+
+        sorted.forEach(p => {
+            const statusColor = p.bird.isAlive ? "#4caf50" : "#f44336";
+            const textStyle = p.bird.isAlive ? "color:#fff;" : "color:#888; text-decoration:line-through;";
+            html += `
+                <div class="score-row" style="${textStyle}">
+                    <span><span class="player-status-tag" style="background:${statusColor};"></span>${p.name}</span>
+                    <span style="color:${p.color.hex};">${p.bird.score} pts</span>
+                </div>
+            `;
+        });
+        listDiv.innerHTML = html;
     }
 
     function spawnPipeSet(startX) {
@@ -877,12 +870,14 @@
                 p.bird.y += p.bird.velocity;
 
                 if (p.bird.y + p.bird.radius > groundY || p.bird.y - p.bird.radius < 0) {
-                    p.bird.isAlive = false;
-                    playQuackSFX(); // DUCK QUACK ON DEATH
+                    killBird(p);
                 }
             }
             drawBird(p, frameCounter);
         });
+
+        // DIBUJAR PARTÍCULAS DE EXPLOSIÓN
+        updateAndDrawParticles();
 
         document.getElementById('alive-count').innerText = activeCount;
 
@@ -913,10 +908,10 @@
                                 p.bird.score++;
                                 playScoreSFX();
                                 p.bird.scoredPipes.add(pipe.id);
+                                updateLiveScoreboard();
                             }
                         } else {
-                            p.bird.isAlive = false;
-                            playQuackSFX(); // DUCK QUACK ON WRONG PIPE
+                            killBird(p);
                         }
                     } 
                     else if (p.bird.y + p.bird.radius > bottomY) {
@@ -925,10 +920,10 @@
                                 p.bird.score++;
                                 playScoreSFX();
                                 p.bird.scoredPipes.add(pipe.id);
+                                updateLiveScoreboard();
                             }
                         } else {
-                            p.bird.isAlive = false;
-                            playQuackSFX(); // DUCK QUACK ON WRONG PIPE
+                            killBird(p);
                         }
                     }
                 }
@@ -952,11 +947,12 @@
         gameActive = false;
         cancelAnimationFrame(animationId);
 
-        let resultsHTML = "<h3 style='margin-bottom:10px;'>Leaderboard</h3>";
+        let resultsHTML = "<h3 style='margin-bottom:10px;'>Leaderboard Final</h3>";
         let sorted = [...connectedPlayers].sort((a, b) => b.bird.score - a.bird.score);
         
         sorted.forEach((p, rank) => {
-            resultsHTML += `<p style="color:${p.color.hex}; margin:4px 0;">${rank + 1}. ${p.name} - ${p.bird.score} pts</p>`;
+            let bonusBadge = p.bird.hasWonBonus ? " 👑 (Last Standing +5)" : "";
+            resultsHTML += `<p style="color:${p.color.hex}; margin:4px 0;">${rank + 1}. ${p.name} - ${p.bird.score} pts${bonusBadge}</p>`;
         });
 
         document.getElementById('leaderboard-results').innerHTML = resultsHTML;
