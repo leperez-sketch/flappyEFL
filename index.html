@@ -117,7 +117,6 @@
             background: rgba(0,0,0,0.4); padding: 4px 0;
         }
 
-        /* TABLA DE PUNTOS DERECHA EN VIVO */
         #scoreboard-panel {
             position: absolute;
             top: 95px; right: 15px;
@@ -151,7 +150,6 @@
             width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px;
         }
 
-        /* BANNER DE ELIMINACIÓN */
         #elim-banner {
             position: absolute;
             top: 100px; left: 50%;
@@ -192,7 +190,6 @@
 <audio id="bgm" src="8782.mp3" loop></audio>
 
 <div id="game-container">
-    <!-- MODE SELECTION -->
     <div id="mode-screen" class="screen">
         <h1>Flappy Verbs</h1>
         <h2>Select Display Mode</h2>
@@ -200,7 +197,6 @@
         <button class="btn btn-join" onclick="showJoinScreen()">📱 Join Game (Student Device)</button>
     </div>
 
-    <!-- HOST LOBBY -->
     <div id="host-lobby-screen" class="screen hidden">
         <h1 style="font-size:2.2rem; margin-bottom:5px;">Room Code: <span id="room-code-display" style="color:#ffeb3b;">----</span></h1>
         <div style="display:flex; align-items:center; gap:20px;">
@@ -235,7 +231,6 @@
         <button class="btn btn-level" style="margin-top:10px; width:40%;" onclick="startHostGame()">🚀 Start Match</button>
     </div>
 
-    <!-- JOIN SCREEN -->
     <div id="join-screen" class="screen hidden">
         <h1>Join Game</h1>
         <input type="text" id="join-code-input" placeholder="ROOM CODE" maxlength="4" style="text-transform:uppercase;">
@@ -244,7 +239,6 @@
         <p id="join-status" style="color:#ffeb3b; font-weight:bold;"></p>
     </div>
 
-    <!-- CONTROLLER SCREEN -->
     <div id="controller-screen" class="screen hidden">
         <div id="mobile-controller">
             <h2 id="player-hud-name" style="margin:10px 0;">Player</h2>
@@ -252,14 +246,12 @@
         </div>
     </div>
 
-    <!-- GAME OVER SCREEN -->
     <div id="gameover-screen" class="screen hidden" style="background: rgba(0,0,0,0.88);">
         <h1 style="color: #f44336; font-size: 3rem;">Match Ended</h1>
         <div id="leaderboard-results" style="width:80%; font-size:1.2rem; line-height:1.5; font-weight:bold; margin-bottom:15px;"></div>
         <button class="btn btn-level" style="width:40%;" onclick="restartMatch()">Play Again</button>
     </div>
 
-    <!-- GAMEPLAY CANVAS -->
     <div id="gameplay-container" class="hidden">
         <div id="hud">
             <span>Players Alive: <span id="alive-count">0</span></span>
@@ -274,13 +266,11 @@
 
         <div id="prompt-banner">Infinitive: <span id="target-verb" style="color:#ffeb3b;">GO</span></div>
 
-        <!-- TABLA LATERAL DERECHA EN VIVO -->
         <div id="scoreboard-panel">
             <h3>Scoreboard</h3>
             <div id="scoreboard-list"></div>
         </div>
 
-        <!-- ALERTA DE ELIMINACIÓN -->
         <div id="elim-banner" class="hidden"></div>
 
         <canvas id="gameCanvas" width="1000" height="500"></canvas>
@@ -288,6 +278,19 @@
 </div>
 
 <script>
+    // CONFIGURACIÓN DE SERVIDORES STUN (CRUCIAL PARA CONECTAR MÚLTIPLES DISPOSITIVOS RED MÓVIL/WIFI)
+    const peerConfig = {
+        config: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' }
+            ]
+        }
+    };
+
     const BIRD_COLORS = [
         { name: "Yellow", hex: "#ffeb3b", dark: "#f57f17" },
         { name: "Red", hex: "#ff1744", dark: "#b71c1c" },
@@ -335,7 +338,6 @@
         C1: { simplePast: [{ inf: "Tear", corr: "tore", incorr: "teared" }], participle: [{ inf: "Tear", corr: "torn", incorr: "toren" }] }
     };
 
-    // --- SYNTHESIZED SFX ---
     let audioCtx = null;
     function getAudioContext() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -399,7 +401,6 @@
         } catch (e) {}
     }
 
-    // Audio BGM Control
     const bgmAudio = document.getElementById('bgm');
     bgmAudio.volume = 0.4;
 
@@ -417,6 +418,7 @@
 
     let isHost = false;
     let peer = null;
+    let clientConn = null;
     let roomCode = "";
     let connectedPlayers = [];
     let gameActive = false;
@@ -430,7 +432,7 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let pipes = [];
-    let particles = []; // SISTEMA DE PARTÍCULAS PARA EXPLOSIÓN
+    let particles = [];
     let currentVerbPair = null;
     let animationId = null;
     let pipeIdCounter = 0;
@@ -450,20 +452,29 @@
         const joinUrl = `${currentUrl}?room=${roomCode}`;
         document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(joinUrl)}`;
 
-        peer = new Peer(`FV-${roomCode}`);
+        peer = new Peer(`FV-${roomCode}`, peerConfig);
+        
         peer.on('open', () => switchScreen('mode-screen', 'host-lobby-screen'));
         peer.on('connection', (conn) => {
-            conn.on('data', (data) => handleHostMessage(conn, data));
+            conn.on('open', () => {
+                conn.on('data', (data) => handleHostMessage(conn, data));
+            });
             conn.on('close', () => removePlayer(conn.peer));
+            conn.on('error', () => removePlayer(conn.peer));
         });
+        peer.on('error', (err) => console.error("PeerJS Host Error: ", err));
     }
 
     function handleHostMessage(conn, data) {
         if (data.type === 'JOIN') {
+            const existingPlayer = connectedPlayers.find(p => p.id === conn.peer);
+            if (existingPlayer) return;
+
             if (connectedPlayers.length >= 6 || gameActive) {
                 conn.send({ type: 'ERROR', message: 'Room Full or Game in Progress' });
                 return;
             }
+
             const colorObj = BIRD_COLORS[connectedPlayers.length];
             const player = {
                 id: conn.peer,
@@ -531,12 +542,18 @@
         }
 
         document.getElementById('join-status').innerText = "Connecting...";
-        peer = new Peer();
+        peer = new Peer(peerConfig);
 
         peer.on('open', () => {
-            const conn = peer.connect(`FV-${code}`);
-            conn.on('open', () => conn.send({ type: 'JOIN', name: name }));
-            conn.on('data', (data) => {
+            clientConn = peer.connect(`FV-${code}`, { reliable: true });
+
+            clientConn.on('open', () => {
+                setTimeout(() => {
+                    clientConn.send({ type: 'JOIN', name: name });
+                }, 100);
+            });
+
+            clientConn.on('data', (data) => {
                 if (data.type === 'JOIN_SUCCESS') {
                     document.getElementById('player-hud-name').innerText = data.name;
                     document.getElementById('tap-button').style.background = data.color.hex;
@@ -546,15 +563,21 @@
                     document.getElementById('join-status').innerText = data.message;
                 }
             });
+
+            clientConn.on('error', () => {
+                document.getElementById('join-status').innerText = "Connection Failed!";
+            });
+        });
+
+        peer.on('error', (err) => {
+            document.getElementById('join-status').innerText = "Room not found!";
         });
     }
 
     function sendFlap(e) {
         if (e && e.type === 'touchstart') e.preventDefault();
-        if (peer && peer.connections) {
-            Object.values(peer.connections).forEach(conns => {
-                conns.forEach(c => c.send({ type: 'FLAP' }));
-            });
+        if (clientConn && clientConn.open) {
+            clientConn.send({ type: 'FLAP' });
         }
     }
 
@@ -594,7 +617,6 @@
         gameLoop();
     }
 
-    // ANIMACIÓN DE EXPLOSIÓN EN EL AVE
     function createBirdExplosion(x, y, colorHex) {
         for (let i = 0; i < 25; i++) {
             particles.push({
@@ -632,7 +654,6 @@
         }
     }
 
-    // ALERTA DE ELIMINACIÓN
     function triggerEliminationAlert(playerName, remainingCount) {
         const banner = document.getElementById('elim-banner');
         banner.innerText = `💥 ¡${playerName} ha sido eliminado! (${remainingCount} en juego)`;
@@ -644,7 +665,6 @@
         }, 2200);
     }
 
-    // MATAR JUGADOR CON EFECTOS Y REGLAS "LAST ONE STANDING"
     function killBird(player) {
         if (!player.bird.isAlive) return;
 
@@ -655,11 +675,10 @@
         const remainingAlive = connectedPlayers.filter(p => p.bird.isAlive).length;
         triggerEliminationAlert(player.name, remainingAlive);
 
-        // Si queda 1 sobreviviente y eran más de 1 al inicio, bono de victoria "Last One Standing"
         if (connectedPlayers.length > 1 && remainingAlive === 1) {
             const lastManStanding = connectedPlayers.find(p => p.bird.isAlive);
             if (lastManStanding && !lastManStanding.bird.hasWonBonus) {
-                lastManStanding.bird.score += 5; // +5 Bonus por sobrevivir
+                lastManStanding.bird.score += 5;
                 lastManStanding.bird.hasWonBonus = true;
             }
         }
@@ -876,7 +895,6 @@
             drawBird(p, frameCounter);
         });
 
-        // DIBUJAR PARTÍCULAS DE EXPLOSIÓN
         updateAndDrawParticles();
 
         document.getElementById('alive-count').innerText = activeCount;
