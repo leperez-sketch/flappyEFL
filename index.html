@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flappy Verbs - Multiplayer EFL Game</title>
+    <title>Flappy Verbs - Brick Breaker Edition</title>
+    <!-- Polyfill para Android Antiguo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.6/es6-shim.min.js"></script>
     <!-- PeerJS WebRTC Library -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -23,7 +25,7 @@
             position: relative;
             width: 1000px;
             height: 500px;
-            background: #4ec0ca;
+            background: #3a2e39;
             border: 6px solid #fff;
             border-radius: 16px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.8);
@@ -57,7 +59,6 @@
             cursor: pointer;
             width: 50%;
             box-shadow: 0 4px #bf360c;
-            transition: transform 0.1s;
         }
         .btn:active { transform: translateY(2px); box-shadow: 0 2px #bf360c; }
         .btn-level { background: #4caf50; box-shadow: 0 4px #1b5e20; }
@@ -91,7 +92,7 @@
             font-weight: bold;
         }
 
-        canvas { display: block; background: #4ec0ca; }
+        canvas { display: block; background: #2c222b; }
 
         #hud {
             position: absolute;
@@ -100,104 +101,57 @@
             padding: 0 20px; font-size: 1.2rem; font-weight: bold;
             text-shadow: 2px 2px #000; pointer-events: none; z-index: 5;
         }
-        #audio-controls {
-            pointer-events: auto;
-            background: rgba(0,0,0,0.6);
-            padding: 5px 12px;
-            border-radius: 20px;
-            display: flex; align-items: center; gap: 10px;
-            font-size: 0.9rem;
-        }
         #prompt-banner {
             position: absolute;
             top: 45px; left: 0; width: 100%;
             text-align: center; font-size: 1.8rem; font-weight: bold;
             color: #fff; text-shadow: 3px 3px #000;
             pointer-events: none; z-index: 5;
-            background: rgba(0,0,0,0.4); padding: 4px 0;
+            background: rgba(0,0,0,0.5); padding: 4px 0;
         }
 
         #scoreboard-panel {
             position: absolute;
             top: 95px; right: 15px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             border: 2px solid #fff;
             border-radius: 12px;
             padding: 10px 14px;
             width: 190px;
             z-index: 6;
             pointer-events: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         #scoreboard-panel h3 {
-            margin: 0 0 6px 0;
-            font-size: 1rem;
-            text-align: center;
-            color: #ffeb3b;
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(255,255,255,0.3);
-            padding-bottom: 4px;
+            margin: 0 0 6px 0; font-size: 1rem; text-align: center; color: #ffeb3b;
+            border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px;
         }
-        .score-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 4px 0;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-        .player-status-tag {
-            width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px;
-        }
+        .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; font-size: 0.9rem; font-weight: bold; }
+        .player-status-tag { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 
         #elim-banner {
-            position: absolute;
-            top: 100px; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(244, 67, 54, 0.92);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-shadow: 2px 2px #000;
-            border: 3px solid #fff;
-            z-index: 8;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+            position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(244, 67, 54, 0.92); color: white; padding: 8px 20px;
+            border-radius: 30px; font-weight: bold; font-size: 1.2rem;
+            text-shadow: 2px 2px #000; border: 3px solid #fff; z-index: 8;
             pointer-events: none;
-            transition: opacity 0.3s;
         }
 
-        #mobile-controller {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            background: #111;
-        }
+        #mobile-controller { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #111; }
         #tap-button {
-            width: 90%; height: 75%;
-            border-radius: 25px;
-            border: 5px solid #fff;
+            width: 90%; height: 75%; border-radius: 25px; border: 5px solid #fff;
             display: flex; justify-content: center; align-items: center;
-            font-size: 3rem; font-weight: bold; text-shadow: 2px 2px #000;
-            box-shadow: 0 10px rgba(0,0,0,0.5);
-            cursor: pointer;
+            font-size: 3rem; font-weight: bold; text-shadow: 2px 2px #000; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<audio id="bgm" src="8782.mp3" loop></audio>
-
 <div id="game-container">
     <div id="mode-screen" class="screen">
-        <h1>Flappy Verbs</h1>
+        <h1>Flappy Verbs: Brick Breaker</h1>
         <h2>Select Display Mode</h2>
         <button class="btn btn-level" onclick="setupHost()">🖥️ Host Game (Smartboard)</button>
         <button class="btn btn-join" onclick="showJoinScreen()">📱 Join Game (Student Device)</button>
-        <p id="https-warning" style="color:#ffeb3b; font-size:0.85rem; margin-top:10px;" class="hidden">
-            ⚠️ Warning: WebRTC requires HTTPS on Android devices.
-        </p>
     </div>
 
     <div id="host-lobby-screen" class="screen hidden">
@@ -258,16 +212,9 @@
     <div id="gameplay-container" class="hidden">
         <div id="hud">
             <span>Players Alive: <span id="alive-count">0</span></span>
-            <div id="audio-controls">
-                <button id="bgm-toggle-btn" style="background:#ff9100; border:none; color:#fff; font-weight:bold; border-radius:12px; padding:4px 10px; cursor:pointer;" onclick="toggleBGM()">🎵 Music</button>
-                <label style="display:flex; align-items:center; gap:5px;">
-                    🔈
-                    <input type="range" id="bgm-vol-slider" min="0" max="1" step="0.05" value="0.4" style="width:70px;" oninput="adjustBGMVolume(this.value)">
-                </label>
-            </div>
         </div>
 
-        <div id="prompt-banner">Infinitive: <span id="target-verb" style="color:#ffeb3b;">GO</span></div>
+        <div id="prompt-banner">Break the wall with: <span id="target-verb" style="color:#ffeb3b;">GO</span></div>
 
         <div id="scoreboard-panel">
             <h3>Scoreboard</h3>
@@ -281,21 +228,12 @@
 </div>
 
 <script>
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        const warn = document.getElementById('https-warning');
-        if (warn) warn.classList.remove('hidden');
-    }
-
     const peerConfig = {
         config: {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun.services.mozilla.com' },
-                { urls: 'stun:global.stun.twilio.com:3478' }
-            ],
-            iceCandidatePoolSize: 10
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
         }
     };
 
@@ -309,11 +247,11 @@
     ];
 
     const configuration = {
-        A1: { speed: 2.4, gap: 210 },
-        A2: { speed: 2.8, gap: 195 },
-        B1: { speed: 3.2, gap: 180 },
-        B2: { speed: 3.7, gap: 170 },
-        C1: { speed: 4.0, gap: 160 }
+        A1: { speed: 1.8, gap: 190 },
+        A2: { speed: 2.1, gap: 180 },
+        B1: { speed: 2.4, gap: 170 },
+        B2: { speed: 2.7, gap: 160 },
+        C1: { speed: 3.0, gap: 150 }
     };
 
     const verbDatabase = {
@@ -340,161 +278,7 @@
                 { inf: "Like", corr: "liked", incorr: "liket" }, { inf: "Go", corr: "gone", incorr: "went" },
                 { inf: "Make", corr: "made", incorr: "maken" }, { inf: "Have", corr: "had", incorr: "hadder" },
                 { inf: "See", corr: "seen", incorr: "saw" }, { inf: "Do", corr: "done", incorr: "did" },
-                { inf: "Come", corr: "come", incorr: "came" }, { inf: "Take", corr: "taken", incorr: "took" },
-                { inf: "Say", corr: "said", incorr: "sayen" }, { inf: "Get", corr: "gotten", incorr: "got" },
-                { inf: "Give", corr: "given", incorr: "gave" }, { inf: "Find", corr: "found", incorr: "founden" },
-                { inf: "Think", corr: "thought", incorr: "thoughten" }, { inf: "Tell", corr: "told", incorr: "tollen" },
-                { inf: "Become", corr: "become", incorr: "became" }, { inf: "Leave", corr: "left", incorr: "leften" },
-                { inf: "Feel", corr: "felt", incorr: "felten" }, { inf: "Put", corr: "put", incorr: "putten" },
-                { inf: "Bring", corr: "brought", incorr: "broughten" }, { inf: "Begin", corr: "begun", incorr: "began" },
-                { inf: "Keep", corr: "kept", incorr: "kepten" }, { inf: "Hold", corr: "held", incorr: "holden" },
-                { inf: "Write", corr: "written", incorr: "wrote" }, { inf: "Stand", corr: "stood", incorr: "stooden" },
-                { inf: "Hear", corr: "heard", incorr: "hearden" }, { inf: "Let", corr: "let", incorr: "letten" },
-                { inf: "Mean", corr: "meant", incorr: "meanten" }, { inf: "Set", corr: "set", incorr: "setten" }
-            ]
-        },
-        A2: {
-            simplePast: [
-                { inf: "Study", corr: "studied", incorr: "studyed" }, { inf: "Buy", corr: "bought", incorr: "buyed" },
-                { inf: "Stop", corr: "stopped", incorr: "stoped" }, { inf: "Write", corr: "wrote", incorr: "writed" },
-                { inf: "Meet", corr: "met", incorr: "meeted" }, { inf: "Pay", corr: "paid", incorr: "payed" },
-                { inf: "Sit", corr: "sat", incorr: "sitted" }, { inf: "Speak", corr: "spoke", incorr: "speaked" },
-                { inf: "Lie", corr: "lay", incorr: "lied" }, { inf: "Lead", corr: "led", incorr: "leaded" },
-                { inf: "Read", corr: "read", incorr: "readed" }, { inf: "Grow", corr: "grew", incorr: "growed" },
-                { inf: "Lose", corr: "lost", incorr: "losed" }, { inf: "Fall", corr: "fell", incorr: "falled" },
-                { inf: "Send", corr: "sent", incorr: "sended" }, { inf: "Build", corr: "built", incorr: "builded" },
-                { inf: "Understand", corr: "understood", incorr: "understanded" }, { inf: "Draw", corr: "drew", incorr: "drawed" },
-                { inf: "Break", corr: "broke", incorr: "broked" }, { inf: "Spend", corr: "spent", incorr: "spended" },
-                { inf: "Cut", corr: "cut", incorr: "cutted" }, { inf: "Rise", corr: "rose", incorr: "rised" },
-                { inf: "Drive", corr: "drove", incorr: "drived" }, { inf: "Wear", corr: "wore", incorr: "weared" },
-                { inf: "Choose", corr: "chose", incorr: "choosed" }, { inf: "Catch", corr: "caught", incorr: "catched" },
-                { inf: "Fly", corr: "flew", incorr: "flyed" }, { inf: "Run", corr: "ran", incorr: "runned" },
-                { inf: "Teach", corr: "taught", incorr: "teached" }, { inf: "Forget", corr: "forgot", incorr: "forgetted" }
-            ],
-            participle: [
-                { inf: "Study", corr: "studied", incorr: "studien" }, { inf: "Buy", corr: "bought", incorr: "boughten" },
-                { inf: "Stop", corr: "stopped", incorr: "stopt" }, { inf: "Write", corr: "written", incorr: "wrote" },
-                { inf: "Meet", corr: "met", incorr: "metten" }, { inf: "Pay", corr: "paid", incorr: "payen" },
-                { inf: "Sit", corr: "sat", incorr: "satten" }, { inf: "Speak", corr: "spoken", incorr: "spoke" },
-                { inf: "Lie", corr: "lain", incorr: "lied" }, { inf: "Lead", corr: "led", incorr: "leadon" },
-                { inf: "Read", corr: "read", incorr: "readen" }, { inf: "Grow", corr: "grown", incorr: "grew" },
-                { inf: "Lose", corr: "lost", incorr: "loosen" }, { inf: "Fall", corr: "fallen", incorr: "fell" },
-                { inf: "Send", corr: "sent", incorr: "senten" }, { inf: "Build", corr: "built", incorr: "builden" },
-                { inf: "Understand", corr: "understood", incorr: "understanden" }, { inf: "Draw", corr: "drawn", incorr: "drew" },
-                { inf: "Break", corr: "broken", incorr: "broke" }, { inf: "Spend", corr: "spent", incorr: "spenden" },
-                { inf: "Cut", corr: "cut", incorr: "cutten" }, { inf: "Rise", corr: "risen", incorr: "rose" },
-                { inf: "Drive", corr: "driven", incorr: "drove" }, { inf: "Wear", corr: "worn", incorr: "wore" },
-                { inf: "Choose", corr: "chosen", incorr: "chose" }, { inf: "Catch", corr: "caught", incorr: "catchen" },
-                { inf: "Fly", corr: "flown", incorr: "flew" }, { inf: "Run", corr: "run", incorr: "ran" },
-                { inf: "Teach", corr: "taught", incorr: "teachen" }, { inf: "Forget", corr: "forgotten", incorr: "forgot" }
-            ]
-        },
-        B1: {
-            simplePast: [
-                { inf: "Sleep", corr: "slept", incorr: "sleeped" }, { inf: "Ring", corr: "rang", incorr: "ringed" },
-                { inf: "Rise", corr: "rose", incorr: "risen" }, { inf: "Sing", corr: "sang", incorr: "sung" },
-                { inf: "Swim", corr: "swam", incorr: "swimmed" }, { inf: "Throw", corr: "threw", incorr: "throwed" },
-                { inf: "Win", corr: "won", incorr: "winned" }, { inf: "Blow", corr: "blew", incorr: "blowed" },
-                { inf: "Hide", corr: "hid", incorr: "hided" }, { inf: "Ride", corr: "rode", incorr: "rided" },
-                { inf: "Shake", corr: "shook", incorr: "shaked" }, { inf: "Shine", corr: "shone", incorr: "shined" },
-                { inf: "Shoot", corr: "shot", incorr: "shooted" }, { inf: "Shut", corr: "shut", incorr: "shutted" },
-                { inf: "Sing", corr: "sang", incorr: "singed" }, { inf: "Sink", corr: "sank", incorr: "sinked" },
-                { inf: "Steal", corr: "stole", incorr: "stealed" }, { inf: "Swear", corr: "swore", incorr: "sweared" },
-                { inf: "Wake", corr: "woke", incorr: "waked" }, { inf: "Bleed", corr: "bled", incorr: "bleeded" },
-                { inf: "Bet", corr: "bet", incorr: "betted" }, { inf: "Cost", corr: "cost", incorr: "costed" },
-                { inf: "Deal", corr: "dealt", incorr: "dealed" }, { inf: "Dig", corr: "dug", incorr: "digged" },
-                { inf: "Feed", corr: "fed", incorr: "feeded" }, { inf: "Fight", corr: "fought", incorr: "fighted" },
-                { inf: "Freeze", corr: "froze", incorr: "freezed" }, { inf: "Hang", corr: "hung", incorr: "hanged" },
-                { inf: "Hit", corr: "hit", incorr: "hitted" }, { inf: "Hurt", corr: "hurt", incorr: "hurted" }
-            ],
-            participle: [
-                { inf: "Sleep", corr: "slept", incorr: "slepten" }, { inf: "Ring", corr: "rung", incorr: "rang" },
-                { inf: "Rise", corr: "risen", incorr: "rose" }, { inf: "Sing", corr: "sung", incorr: "sang" },
-                { inf: "Swim", corr: "swum", incorr: "swam" }, { inf: "Throw", corr: "thrown", incorr: "threw" },
-                { inf: "Win", corr: "won", incorr: "wonnen" }, { inf: "Blow", corr: "blown", incorr: "blew" },
-                { inf: "Hide", corr: "hidden", incorr: "hid" }, { inf: "Ride", corr: "ridden", incorr: "rode" },
-                { inf: "Shake", corr: "shaken", incorr: "shook" }, { inf: "Shine", corr: "shone", incorr: "shinen" },
-                { inf: "Shoot", corr: "shot", incorr: "shotten" }, { inf: "Shut", corr: "shut", incorr: "shutten" },
-                { inf: "Sink", corr: "sunk", incorr: "sank" }, { inf: "Steal", corr: "stolen", incorr: "stole" },
-                { inf: "Swear", corr: "sworn", incorr: "swore" }, { inf: "Wake", corr: "woken", incorr: "woke" },
-                { inf: "Bleed", corr: "bled", incorr: "bledden" }, { inf: "Bet", corr: "bet", incorr: "betten" },
-                { inf: "Cost", corr: "cost", incorr: "costen" }, { inf: "Deal", corr: "dealt", incorr: "dealten" },
-                { inf: "Dig", corr: "dug", incorr: "duggen" }, { inf: "Feed", corr: "fed", incorr: "fedden" },
-                { inf: "Fight", corr: "fought", incorr: "foughten" }, { inf: "Freeze", corr: "frozen", incorr: "froze" },
-                { inf: "Hang", corr: "hung", incorr: "hungen" }, { inf: "Hit", corr: "hit", incorr: "hitten" },
-                { inf: "Hurt", corr: "hurt", incorr: "hurten" }, { inf: "Lend", corr: "lent", incorr: "lenden" }
-            ]
-        },
-        B2: {
-            simplePast: [
-                { inf: "Bite", corr: "bit", incorr: "bited" }, { inf: "Bend", corr: "bent", incorr: "bended" },
-                { inf: "Bind", corr: "bound", incorr: "binded" }, { inf: "Broadcast", corr: "broadcast", incorr: "broadcasted" },
-                { inf: "Cling", corr: "clung", incorr: "clinged" }, { inf: "Creep", corr: "crept", incorr: "creeped" },
-                { inf: "Flee", corr: "fled", incorr: "fleed" }, { inf: "Forbid", corr: "forbade", incorr: "forbidded" },
-                { inf: "Forgive", corr: "forgave", incorr: "forgived" }, { inf: "Kneel", corr: "knelt", incorr: "kneeled" },
-                { inf: "Mistake", corr: "mistook", incorr: "mistaked" }, { inf: "Overcome", corr: "overcame", incorr: "overcomed" },
-                { inf: "Shrink", corr: "shrank", incorr: "shrinked" }, { inf: "Slide", corr: "slid", incorr: "slided" },
-                { inf: "Spit", corr: "spat", incorr: "spitted" }, { inf: "Split", corr: "split", incorr: "splitted" },
-                { inf: "Spring", corr: "sprang", incorr: "springed" }, { inf: "Stink", corr: "stank", incorr: "stinked" },
-                { inf: "Strike", corr: "struck", incorr: "striked" }, { inf: "Swing", corr: "swung", incorr: "swinged" },
-                { inf: "Undergo", corr: "underwent", incorr: "undergone" }, { inf: "Upset", corr: "upset", incorr: "upsetted" },
-                { inf: "Weep", corr: "wept", incorr: "weeped" }, { inf: "Wind", corr: "wound", incorr: "winded" },
-                { inf: "Withdraw", corr: "withdrew", incorr: "withdrawn" }, { inf: "Withstand", corr: "withstood", incorr: "withstanded" },
-                { inf: "Spread", corr: "spread", incorr: "spreaded" }, { inf: "Spin", corr: "spun", incorr: "spinned" },
-                { inf: "Speed", corr: "sped", incorr: "speeded" }, { inf: "Spill", corr: "spilt", incorr: "spilled" }
-            ],
-            participle: [
-                { inf: "Bite", corr: "bitten", incorr: "bit" }, { inf: "Bend", corr: "bent", incorr: "benten" },
-                { inf: "Bind", corr: "bound", incorr: "bounden" }, { inf: "Broadcast", corr: "broadcast", incorr: "broadcasten" },
-                { inf: "Cling", corr: "clung", incorr: "clungen" }, { inf: "Creep", corr: "crept", incorr: "crepten" },
-                { inf: "Flee", corr: "fled", incorr: "fleden" }, { inf: "Forbid", corr: "forbidden", incorr: "forbade" },
-                { inf: "Forgive", corr: "forgiven", incorr: "forgave" }, { inf: "Kneel", corr: "knelt", incorr: "knelten" },
-                { inf: "Mistake", corr: "mistaken", incorr: "mistook" }, { inf: "Overcome", corr: "overcome", incorr: "overcame" },
-                { inf: "Shrink", corr: "shrunk", incorr: "shrank" }, { inf: "Slide", corr: "slid", incorr: "slidden" },
-                { inf: "Spit", corr: "spat", incorr: "spatten" }, { inf: "Split", corr: "split", incorr: "splitten" },
-                { inf: "Spring", corr: "sprung", incorr: "sprang" }, { inf: "Stink", corr: "stunk", incorr: "stank" },
-                { inf: "Strike", corr: "struck", incorr: "stricken" }, { inf: "Swing", corr: "swung", incorr: "swungen" },
-                { inf: "Undergo", corr: "undergone", incorr: "underwent" }, { inf: "Upset", corr: "upset", incorr: "upsetten" },
-                { inf: "Weep", corr: "wept", incorr: "wepten" }, { inf: "Wind", corr: "wound", incorr: "wounden" },
-                { inf: "Withdraw", corr: "withdrawn", incorr: "withdrew" }, { inf: "Withstand", corr: "withstood", incorr: "withstooden" },
-                { inf: "Spread", corr: "spread", incorr: "spreaden" }, { inf: "Spin", corr: "spun", incorr: "spunnen" },
-                { inf: "Speed", corr: "sped", incorr: "spetten" }, { inf: "Spill", corr: "spilt", incorr: "spilten" }
-            ]
-        },
-        C1: {
-            simplePast: [
-                { inf: "Tear", corr: "tore", incorr: "teared" }, { inf: "Abide", corr: "abode", incorr: "abided" },
-                { inf: "Arise", corr: "arose", incorr: "arised" }, { inf: "Befall", corr: "befell", incorr: "befalled" },
-                { inf: "Beget", corr: "begot", incorr: "begetted" }, { inf: "Behold", corr: "beheld", incorr: "beholded" },
-                { inf: "Beseech", corr: "besought", incorr: "beseeched" }, { inf: "Bid", corr: "bade", incorr: "bidded" },
-                { inf: "Breed", corr: "bred", incorr: "breeded" }, { inf: "Cleave", corr: "cleft", incorr: "cleaved" },
-                { inf: "Foresee", corr: "foresaw", incorr: "foreseen" }, { inf: "Foretell", corr: "foretold", incorr: "foretelled" },
-                { inf: "Forsake", corr: "forsook", incorr: "forsaked" }, { inf: "Gird", corr: "girt", incorr: "girded" },
-                { inf: "Leap", corr: "leapt", incorr: "leaped" }, { inf: "Mow", corr: "mowed", incorr: "mew" },
-                { inf: "Overhear", corr: "overheard", incorr: "overheared" }, { inf: "Overrun", corr: "overran", incorr: "overrunned" },
-                { inf: "Rend", corr: "rent", incorr: "rended" }, { inf: "Saw", corr: "sawed", incorr: "sew" },
-                { inf: "Shed", corr: "shed", incorr: "shedded" }, { inf: "Slay", corr: "slew", incorr: "slayed" }, { inf: "Sling", corr: "slung", incorr: "slinged" },
-                { inf: "Slink", corr: "slunk", incorr: "slinked" }, { inf: "Smite", corr: "smote", incorr: "smited" },
-                { inf: "Sow", corr: "sowed", incorr: "sew" }, { inf: "Stride", corr: "strode", incorr: "strided" },
-                { inf: "String", corr: "strung", incorr: "stringed" }, { inf: "Tread", corr: "trode", incorr: "treaded" },
-                { inf: "Wring", corr: "wrung", incorr: "wringed" }
-            ],
-            participle: [
-                { inf: "Tear", corr: "torn", incorr: "tore" }, { inf: "Abide", corr: "abode", incorr: "abiden" },
-                { inf: "Arise", corr: "arisen", incorr: "arose" }, { inf: "Befall", corr: "befallen", incorr: "befell" },
-                { inf: "Beget", corr: "begotten", incorr: "begot" }, { inf: "Behold", corr: "beheld", incorr: "beholden" },
-                { inf: "Beseech", corr: "besought", incorr: "besoughten" }, { inf: "Bid", corr: "bidden", incorr: "bade" },
-                { inf: "Breed", corr: "bred", incorr: "bredden" }, { inf: "Cleave", corr: "cloven", incorr: "cleft" },
-                { inf: "Foresee", corr: "foreseen", incorr: "foresaw" }, { inf: "Foretell", corr: "foretold", incorr: "foretollen" },
-                { inf: "Forsake", corr: "forsaken", incorr: "forsook" }, { inf: "Gird", corr: "girt", incorr: "girten" },
-                { inf: "Leap", corr: "leapt", incorr: "leapten" }, { inf: "Mow", corr: "mown", incorr: "mowed" },
-                { inf: "Overhear", corr: "overheard", incorr: "overhearden" }, { inf: "Overrun", corr: "overrun", incorr: "overran" },
-                { inf: "Rend", corr: "rent", incorr: "renten" }, { inf: "Saw", corr: "sawn", incorr: "sawed" },
-                { inf: "Shed", corr: "shed", incorr: "shedden" }, { inf: "Slay", corr: "slain", incorr: "slew" },
-                { inf: "Sling", corr: "slung", incorr: "slungen" }, { inf: "Slink", corr: "slunk", incorr: "slunken" },
-                { inf: "Smite", corr: "smitten", incorr: "smote" }, { inf: "Sow", corr: "sown", incorr: "sowed" },
-                { inf: "Stride", corr: "strridden", incorr: "strode" }, { inf: "String", corr: "strung", incorr: "strungen" },
-                { inf: "Tread", corr: "trodden", incorr: "trode" }, { inf: "Wring", corr: "wrung", incorr: "wrungen" }
+                { inf: "Come", corr: "come", incorr: "came" }, { inf: "Take", corr: "taken", incorr: "took" }
             ]
         }
     };
@@ -508,74 +292,29 @@
 
     function playFlapSFX() {
         try {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(350, ctx.currentTime);
+            const ctx = getAudioContext(); if (!ctx) return;
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(350, ctx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.08);
-            gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
             osc.connect(gain); gain.connect(ctx.destination);
             osc.start(); osc.stop(ctx.currentTime + 0.08);
         } catch (e) {}
     }
 
-    function playQuackSFX() {
+    function playBreakSFX() {
         try {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const osc = ctx.createOscillator();
-            const filter = ctx.createBiquadFilter();
-            const gain = ctx.createGain();
-
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(380, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.32);
-
-            filter.type = 'bandpass';
-            filter.frequency.setValueAtTime(850, ctx.currentTime);
-            filter.Q.setValueAtTime(3.5, ctx.currentTime);
-
-            gain.gain.setValueAtTime(0.4, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.32);
-
-            osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-            osc.start(); osc.stop(ctx.currentTime + 0.32);
-        } catch (e) {}
-    }
-
-    function playScoreSFX() {
-        try {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-            osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
-            gain.gain.setValueAtTime(0.25, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            const ctx = getAudioContext(); if (!ctx) return;
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.type = 'square'; osc.frequency.setValueAtTime(150, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
             osc.connect(gain); gain.connect(ctx.destination);
-            osc.start(); osc.stop(ctx.currentTime + 0.2);
-        } catch (e) {}
+            osc.start(); osc.stop(ctx.currentTime + 0.15);
+        } catch(e) {}
     }
-
-    const bgmAudio = document.getElementById('bgm');
-    bgmAudio.volume = 0.4;
-
-    function toggleBGM() {
-        if (bgmAudio.paused) {
-            bgmAudio.play().catch(() => {});
-            document.getElementById('bgm-toggle-btn').innerText = "⏸️ Pause";
-        } else {
-            bgmAudio.pause();
-            document.getElementById('bgm-toggle-btn').innerText = "🎵 Music";
-        }
-    }
-
-    function adjustBGMVolume(val) { bgmAudio.volume = val; }
 
     let isHost = false;
     let peer = null;
@@ -593,12 +332,10 @@
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    let pipes = [];
+    let walls = [];
     let particles = [];
-    let currentVerbPair = null;
     let animationId = null;
-    let pipeIdCounter = 0;
-    let elimBannerTimer = null;
+    let wallIdCounter = 0;
 
     function switchScreen(fromId, toId) {
         document.getElementById(fromId).classList.add('hidden');
@@ -615,52 +352,28 @@
         document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(joinUrl)}`;
 
         peer = new Peer(`FV-${roomCode}`, peerConfig);
-        
         peer.on('open', () => switchScreen('mode-screen', 'host-lobby-screen'));
         peer.on('connection', (conn) => {
             conn.on('data', (data) => handleHostMessage(conn, data));
             conn.on('close', () => removePlayer(conn.peer));
-            conn.on('error', () => removePlayer(conn.peer));
         });
-        peer.on('error', (err) => console.error("PeerJS Host Error:", err));
     }
 
     function handleHostMessage(conn, data) {
         if (data.type === 'JOIN') {
-            const existingPlayer = connectedPlayers.find(p => p.id === conn.peer);
-            if (existingPlayer) return;
-
-            if (connectedPlayers.length >= 6 || gameActive) {
-                conn.send({ type: 'ERROR', message: 'Room Full or Game in Progress' });
-                return;
-            }
-
+            if (connectedPlayers.length >= 6 || gameActive) return;
             const colorObj = BIRD_COLORS[connectedPlayers.length];
             const player = {
-                id: conn.peer,
-                name: data.name || `Player ${connectedPlayers.length + 1}`,
-                color: colorObj,
-                conn: conn,
-                bird: {
-                    x: 120 + (connectedPlayers.length * 35),
-                    y: 250,
-                    radius: 17,
-                    velocity: 0,
-                    isAlive: true,
-                    score: 0,
-                    hasWonBonus: false,
-                    scoredPipes: new Set()
-                }
+                id: conn.peer, name: data.name || `Player ${connectedPlayers.length + 1}`,
+                color: colorObj, conn: conn,
+                bird: { x: 120 + (connectedPlayers.length * 35), y: 250, radius: 17, velocity: 0, isAlive: true, score: 0, scoredWalls: new Set() }
             };
             connectedPlayers.push(player);
             updateLobbyUI();
             conn.send({ type: 'JOIN_SUCCESS', color: colorObj, name: player.name });
         } else if (data.type === 'FLAP') {
             const p = connectedPlayers.find(p => p.id === conn.peer);
-            if (p && p.bird.isAlive && gameActive) {
-                p.bird.velocity = FLAP_STRENGTH;
-                playFlapSFX();
-            }
+            if (p && p.bird.isAlive && gameActive) { p.bird.velocity = FLAP_STRENGTH; playFlapSFX(); }
         }
     }
 
@@ -668,13 +381,10 @@
         for (let i = 0; i < 6; i++) {
             const slot = document.getElementById(`slot-${i}`);
             if (connectedPlayers[i]) {
-                slot.style.background = connectedPlayers[i].color.hex;
-                slot.style.color = '#000';
+                slot.style.background = connectedPlayers[i].color.hex; slot.style.color = '#000';
                 slot.innerText = `${i + 1}. ${connectedPlayers[i].name}`;
             } else {
-                slot.style.background = "rgba(0,0,0,0.5)";
-                slot.style.color = "#fff";
-                slot.innerText = "Waiting...";
+                slot.style.background = "rgba(0,0,0,0.5)"; slot.style.color = "#fff"; slot.innerText = "Waiting...";
             }
         }
     }
@@ -687,217 +397,97 @@
     function showJoinScreen() {
         switchScreen('mode-screen', 'join-screen');
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('room')) {
-            document.getElementById('join-code-input').value = urlParams.get('room');
-        }
+        if (urlParams.has('room')) document.getElementById('join-code-input').value = urlParams.get('room');
     }
 
     function connectToHost() {
         const code = document.getElementById('join-code-input').value.toUpperCase();
         const name = document.getElementById('player-name-input').value;
+        if (!code || !name) return;
 
-        if (!code || !name) {
-            document.getElementById('join-status').innerText = "Enter Code & Name!";
-            return;
-        }
-
-        document.getElementById('join-status').innerText = "Connecting to Host...";
-        
-        if (peer) peer.destroy();
         peer = new Peer(peerConfig);
-
         peer.on('open', () => {
             clientConn = peer.connect(`FV-${code}`);
-
-            clientConn.on('open', () => {
-                document.getElementById('join-status').innerText = "Authenticating...";
-                clientConn.send({ type: 'JOIN', name: name });
-            });
-
+            clientConn.on('open', () => clientConn.send({ type: 'JOIN', name: name }));
             clientConn.on('data', (data) => {
                 if (data.type === 'JOIN_SUCCESS') {
                     document.getElementById('player-hud-name').innerText = data.name;
                     document.getElementById('tap-button').style.background = data.color.hex;
-                    document.getElementById('tap-button').style.color = '#000';
                     switchScreen('join-screen', 'controller-screen');
-                } else if (data.type === 'ERROR') {
-                    document.getElementById('join-status').innerText = data.message;
                 }
             });
-
-            clientConn.on('close', () => {
-                document.getElementById('join-status').innerText = "Connection Closed!";
-            });
-
-            clientConn.on('error', (err) => {
-                document.getElementById('join-status').innerText = "Connection Error!";
-            });
-        });
-
-        peer.on('error', (err) => {
-            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-                document.getElementById('join-status').innerText = "Android WebRTC requires HTTPS!";
-            } else {
-                document.getElementById('join-status').innerText = "Room Not Found! Check Code.";
-            }
         });
     }
 
     function sendFlap(e) {
         if (e && e.type === 'touchstart') e.preventDefault();
-        if (clientConn && clientConn.open) {
-            clientConn.send({ type: 'FLAP' });
-        }
+        if (clientConn && clientConn.open) clientConn.send({ type: 'FLAP' });
     }
 
     function startHostGame() {
-        if (connectedPlayers.length === 0) {
-            alert("At least 1 player must join!");
-            return;
-        }
+        if (connectedPlayers.length === 0) return alert("At least 1 player required!");
         chosenLevel = document.getElementById('cefr-select').value;
         chosenType = document.getElementById('tense-select').value;
-
         switchScreen('host-lobby-screen', 'gameplay-container');
-        bgmAudio.play().catch(() => {});
         initMatch();
     }
 
     function initMatch() {
-        frameCounter = 0;
-        pipeIdCounter = 0;
-        lastVerbInf = "";
-        pipes = [];
-        particles = [];
-        gameActive = true;
-
+        frameCounter = 0; wallIdCounter = 0; lastVerbInf = ""; walls = []; particles = []; gameActive = true;
         connectedPlayers.forEach((p, idx) => {
-            p.bird.y = 250;
-            p.bird.velocity = 0;
-            p.bird.isAlive = true;
-            p.bird.score = 0;
-            p.bird.hasWonBonus = false;
-            p.bird.scoredPipes = new Set();
-            p.bird.x = 120 + (idx * 30);
+            p.bird.y = 250; p.bird.velocity = 0; p.bird.isAlive = true; p.bird.score = 0;
+            p.bird.scoredWalls = new Set(); p.bird.x = 120 + (idx * 30);
         });
-
-        spawnPipeSet(1000);
+        spawnWallSet(1000);
         updateLiveScoreboard();
         if (animationId) cancelAnimationFrame(animationId);
         gameLoop();
     }
 
-    function createBirdExplosion(x, y, colorHex) {
-        for (let i = 0; i < 25; i++) {
+    function createBrickDebris(x, y) {
+        for (let i = 0; i < 20; i++) {
             particles.push({
-                type: 'circle',
-                x: x,
-                y: y,
-                vx: (Math.random() - 0.5) * 10,
-                vy: (Math.random() - 0.5) * 10,
-                radius: Math.random() * 6 + 2,
-                color: Math.random() > 0.3 ? colorHex : "#ff5722",
-                alpha: 1,
-                decay: Math.random() * 0.03 + 0.02
+                type: 'brick', x: x, y: y,
+                vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
+                w: Math.random() * 12 + 6, h: Math.random() * 8 + 4,
+                color: Math.random() > 0.5 ? "#b71c1c" : "#d32f2f",
+                alpha: 1, decay: Math.random() * 0.03 + 0.02
             });
         }
     }
 
     function createStarParticles(x, y) {
-        const starColors = ['#ffeb3b', '#ffd700', '#ffffff', '#00e5ff'];
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 12; i++) {
             particles.push({
-                type: 'star',
-                x: x,
-                y: y,
-                vx: (Math.random() - 0.5) * 8,
-                vy: (Math.random() - 0.5) * 8 - 2,
-                size: Math.random() * 8 + 5,
-                color: starColors[Math.floor(Math.random() * starColors.length)],
-                alpha: 1,
-                decay: Math.random() * 0.03 + 0.02,
-                rotation: Math.random() * Math.PI * 2,
-                rotSpeed: (Math.random() - 0.5) * 0.2
+                type: 'star', x: x, y: y,
+                vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8,
+                size: Math.random() * 7 + 4, color: "#ffd700", alpha: 1, decay: 0.025
             });
         }
-    }
-
-    function drawStarShape(cx, cy, spikes, outerRadius, innerRadius) {
-        let rot = Math.PI / 2 * 3;
-        let step = Math.PI / spikes;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - outerRadius);
-        for (let i = 0; i < spikes; i++) {
-            ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
-            rot += step;
-            ctx.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
-            rot += step;
-        }
-        ctx.lineTo(cx, cy - outerRadius);
-        ctx.closePath();
-        ctx.fill();
     }
 
     function updateAndDrawParticles() {
         for (let i = particles.length - 1; i >= 0; i--) {
             let pt = particles[i];
-            pt.x += pt.vx;
-            pt.y += pt.vy;
-            pt.alpha -= pt.decay;
-
-            if (pt.alpha <= 0) {
-                particles.splice(i, 1);
-                continue;
-            }
+            pt.x += pt.vx; pt.y += pt.vy; pt.alpha -= pt.decay;
+            if (pt.alpha <= 0) { particles.splice(i, 1); continue; }
 
             ctx.save();
             ctx.globalAlpha = pt.alpha;
             ctx.fillStyle = pt.color;
 
-            if (pt.type === 'star') {
-                pt.rotation += pt.rotSpeed;
-                ctx.translate(pt.x, pt.y);
-                ctx.rotate(pt.rotation);
-                drawStarShape(0, 0, 5, pt.size, pt.size / 2);
+            if (pt.type === 'brick') {
+                ctx.fillRect(pt.x, pt.y, pt.w, pt.h);
             } else {
-                ctx.beginPath();
-                ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
             }
-
             ctx.restore();
         }
     }
 
-    function triggerEliminationAlert(playerName, remainingCount) {
-        const banner = document.getElementById('elim-banner');
-        banner.innerText = `💥 ¡${playerName} ha sido eliminado! (${remainingCount} en juego)`;
-        banner.classList.remove('hidden');
-
-        if (elimBannerTimer) clearTimeout(elimBannerTimer);
-        elimBannerTimer = setTimeout(() => {
-            banner.classList.add('hidden');
-        }, 2200);
-    }
-
     function killBird(player) {
         if (!player.bird.isAlive) return;
-
         player.bird.isAlive = false;
-        playQuackSFX();
-        createBirdExplosion(player.bird.x, player.bird.y, player.color.hex);
-
-        const remainingAlive = connectedPlayers.filter(p => p.bird.isAlive).length;
-        triggerEliminationAlert(player.name, remainingAlive);
-
-        if (connectedPlayers.length > 1 && remainingAlive === 1) {
-            const lastManStanding = connectedPlayers.find(p => p.bird.isAlive);
-            if (lastManStanding && !lastManStanding.bird.hasWonBonus) {
-                lastManStanding.bird.score += 5;
-                lastManStanding.bird.hasWonBonus = true;
-            }
-        }
-
         updateLiveScoreboard();
     }
 
@@ -905,190 +495,81 @@
         const listDiv = document.getElementById('scoreboard-list');
         let html = "";
         let sorted = [...connectedPlayers].sort((a, b) => b.bird.score - a.bird.score);
-
         sorted.forEach(p => {
             const statusColor = p.bird.isAlive ? "#4caf50" : "#f44336";
-            const textStyle = p.bird.isAlive ? "color:#fff;" : "color:#888; text-decoration:line-through;";
-            html += `
-                <div class="score-row" style="${textStyle}">
-                    <span><span class="player-status-tag" style="background:${statusColor};"></span>${p.name}</span>
-                    <span style="color:${p.color.hex};">${p.bird.score} pts</span>
-                </div>
-            `;
+            html += `<div class="score-row" style="${p.bird.isAlive ? '' : 'color:#888; text-decoration:line-through;'}">
+                <span><span class="player-status-tag" style="background:${statusColor};"></span>${p.name}</span>
+                <span style="color:${p.color.hex};">${p.bird.score} pts</span>
+            </div>`;
         });
         listDiv.innerHTML = html;
     }
 
-    function spawnPipeSet(startX) {
+    function spawnWallSet(startX) {
         const config = configuration[chosenLevel];
-        const pool = verbDatabase[chosenLevel][chosenType];
-        
+        const pool = verbDatabase[chosenLevel][chosenType] || verbDatabase["A1"]["simplePast"];
         let availablePool = pool.filter(v => v.inf !== lastVerbInf);
         if (availablePool.length === 0) availablePool = pool;
         
-        currentVerbPair = availablePool[Math.floor(Math.random() * availablePool.length)];
-        lastVerbInf = currentVerbPair.inf;
+        let pair = availablePool[Math.floor(Math.random() * availablePool.length)];
+        lastVerbInf = pair.inf;
+        document.getElementById('target-verb').innerText = pair.inf.toUpperCase();
 
-        document.getElementById('target-verb').innerText = currentVerbPair.inf.toUpperCase();
-
-        const minHeight = 70;
-        const maxHeight = canvas.height - config.gap - minHeight - 50;
-        const topPipeHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+        const topWallHeight = Math.floor(Math.random() * (canvas.height - config.gap - 100)) + 50;
         const isTopCorrect = Math.random() > 0.5;
 
-        pipes.push({
-            id: ++pipeIdCounter,
-            x: startX,
-            width: 120,
-            topHeight: topPipeHeight,
-            gap: config.gap,
-            topText: isTopCorrect ? currentVerbPair.corr : currentVerbPair.incorr,
-            bottomText: isTopCorrect ? currentVerbPair.incorr : currentVerbPair.corr,
-            topIsCorrect: isTopCorrect
+        walls.push({
+            id: ++wallIdCounter, x: startX, width: 110,
+            topHeight: topWallHeight, gap: config.gap,
+            topText: isTopCorrect ? pair.corr : pair.incorr,
+            bottomText: isTopCorrect ? pair.incorr : pair.corr,
+            topIsCorrect: isTopCorrect,
+            topBroken: false, bottomBroken: false
         });
     }
 
-    function drawEnhancedBackground(frame) {
-        let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        skyGrad.addColorStop(0, '#4ec0ca');
-        skyGrad.addColorStop(0.7, '#81d4fa');
-        skyGrad.addColorStop(1, '#e0f7fa');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function drawBrickWall(x, y, width, height, text, isBroken) {
+        if (isBroken) return; // Si el muro ya fue destruido, no se dibuja
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-        let cloudX1 = (frame * 0.4) % (canvas.width + 200) - 100;
-        let cloudX2 = (frame * 0.2 + 400) % (canvas.width + 200) - 100;
+        // Color Base
+        ctx.fillStyle = "#b71c1c";
+        ctx.fillRect(x, y, width, height);
 
-        drawCloud(cloudX1, 60, 35);
-        drawCloud(cloudX2, 110, 25);
-
-        ctx.fillStyle = "#73bf2e";
-        ctx.beginPath();
-        ctx.arc(200, 470, 220, Math.PI, 0, false);
-        ctx.arc(650, 480, 260, Math.PI, 0, false);
-        ctx.arc(1000, 470, 200, Math.PI, 0, false);
-        ctx.fill();
-
-        const groundHeight = 50;
-        const groundY = canvas.height - groundHeight;
-
-        ctx.fillStyle = "#ded895";
-        ctx.fillRect(0, groundY, canvas.width, groundHeight);
-
-        ctx.fillStyle = "#73bf2e";
-        ctx.fillRect(0, groundY, canvas.width, 12);
-        ctx.fillStyle = "#558000";
-        ctx.fillRect(0, groundY + 12, canvas.width, 4);
-
-        ctx.strokeStyle = "#ceb86c";
-        ctx.lineWidth = 6;
-        let offset = (frame * 2) % 24;
-        for (let x = -30 + offset; x < canvas.width + 30; x += 24) {
-            ctx.beginPath();
-            ctx.moveTo(x, groundY + 16);
-            ctx.lineTo(x - 12, canvas.height);
-            ctx.stroke();
+        // Textura de Ladrillos
+        ctx.strokeStyle = "#421010";
+        ctx.lineWidth = 2;
+        const brickH = 20; const brickW = 35;
+        for (let bw = y; bw < y + height; bw += brickH) {
+            ctx.beginPath(); ctx.moveTo(x, bw); ctx.lineTo(x + width, bw); ctx.stroke();
+            let offset = (Math.floor(bw / brickH) % 2) * (brickW / 2);
+            for (let bx = x + offset; bx < x + width; bx += brickW) {
+                ctx.beginPath(); ctx.moveTo(bx, bw); ctx.lineTo(bx, Math.min(bw + brickH, y + height)); ctx.stroke();
+            }
         }
-    }
 
-    function drawCloud(x, y, scale) {
-        ctx.beginPath();
-        ctx.arc(x, y, scale, 0, Math.PI * 2);
-        ctx.arc(x + scale * 0.7, y - scale * 0.4, scale * 0.7, 0, Math.PI * 2);
-        ctx.arc(x + scale * 1.3, y, scale * 0.8, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    function draw3DPipe(x, y, width, height, isTop) {
-        const capHeight = 30;
-        const capOverlap = 8;
-        const capWidth = width + capOverlap * 2;
-        const capX = x - capOverlap;
-
-        let bodyY = isTop ? 0 : y;
-        let bodyHeight = isTop ? (height - capHeight) : height;
-        let capY = isTop ? (height - capHeight) : y;
-
-        let bodyGrad = ctx.createLinearGradient(x, 0, x + width, 0);
-        bodyGrad.addColorStop(0, '#2d4500');
-        bodyGrad.addColorStop(0.15, '#558000');
-        bodyGrad.addColorStop(0.35, '#a3e048');
-        bodyGrad.addColorStop(0.65, '#73bf2e');
-        bodyGrad.addColorStop(0.9, '#385e00');
-        bodyGrad.addColorStop(1, '#1b3000');
-
-        ctx.fillStyle = bodyGrad;
-        ctx.fillRect(x, bodyY, width, bodyHeight);
-        ctx.strokeStyle = '#000';
+        // Borde exterior
+        ctx.strokeStyle = "#fff";
         ctx.lineWidth = 3;
-        ctx.strokeRect(x, bodyY, width, bodyHeight);
+        ctx.strokeRect(x, y, width, height);
 
-        let capGrad = ctx.createLinearGradient(capX, 0, capX + capWidth, 0);
-        capGrad.addColorStop(0, '#2d4500');
-        capGrad.addColorStop(0.15, '#558000');
-        capGrad.addColorStop(0.35, '#b8f054');
-        capGrad.addColorStop(0.65, '#73bf2e');
-        capGrad.addColorStop(0.9, '#385e00');
-        capGrad.addColorStop(1, '#1b3000');
-
-        ctx.fillStyle = capGrad;
-        ctx.fillRect(capX, capY, capWidth, capHeight);
-        ctx.strokeRect(capX, capY, capWidth, capHeight);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.fillRect(x + width * 0.22, bodyY, width * 0.08, bodyHeight);
-        ctx.fillRect(capX + capWidth * 0.22, capY, capWidth * 0.08, capHeight);
+        // Verbo escrito sobre los ladrillos
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 22px Arial";
+        ctx.textAlign = "center";
+        ctx.shadowColor = "black"; ctx.shadowBlur = 6;
+        ctx.fillText(text, x + width / 2, y + height / 2 + 7);
+        ctx.shadowBlur = 0;
     }
 
-    function drawBird(p, frame) {
+    function drawBird(p) {
         const b = p.bird;
         if (!b.isAlive) return;
 
         ctx.save();
         ctx.translate(b.x, b.y);
-
-        let angle = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, b.velocity * 0.08));
-        ctx.rotate(angle);
-
-        ctx.font = "bold 12px Arial";
-        let textWidth = ctx.measureText(p.name).width;
-        ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(-textWidth/2 - 5, -b.radius - 20, textWidth + 10, 16);
-        ctx.fillStyle = "#fff";
-        ctx.textAlign = "center";
-        ctx.fillText(p.name, 0, -b.radius - 8);
-
         ctx.fillStyle = p.color.hex;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, b.radius + 3, b.radius, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        let wingOffsetY = Math.sin(frame * 0.25) * 6;
-        ctx.fillStyle = p.color.dark;
-        ctx.beginPath();
-        ctx.ellipse(-5, wingOffsetY, 10, 5, -0.3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = "#fff";
-        ctx.beginPath();
-        ctx.arc(7, -5, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.arc(9, -5, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#ff5722";
-        ctx.beginPath();
-        ctx.moveTo(11, 0); ctx.lineTo(20, 3); ctx.lineTo(11, 7);
-        ctx.closePath(); ctx.fill(); ctx.stroke();
-
+        ctx.beginPath(); ctx.arc(0, 0, b.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.stroke();
         ctx.restore();
     }
 
@@ -1097,72 +578,62 @@
         frameCounter++;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        drawEnhancedBackground(frameCounter);
-
         const config = configuration[chosenLevel];
-        const groundY = canvas.height - 50;
-
         let activeCount = 0;
+
         connectedPlayers.forEach(p => {
             if (p.bird.isAlive) {
                 activeCount++;
                 p.bird.velocity += GRAVITY;
                 p.bird.y += p.bird.velocity;
-
-                if (p.bird.y + p.bird.radius > groundY || p.bird.y - p.bird.radius < 0) {
-                    killBird(p);
-                }
+                if (p.bird.y + p.bird.radius > canvas.height || p.bird.y - p.bird.radius < 0) killBird(p);
             }
-            drawBird(p, frameCounter);
+            drawBird(p);
         });
 
         updateAndDrawParticles();
-
         document.getElementById('alive-count').innerText = activeCount;
 
-        for (let i = pipes.length - 1; i >= 0; i--) {
-            let pipe = pipes[i];
-            pipe.x -= config.speed;
+        for (let i = walls.length - 1; i >= 0; i--) {
+            let wall = walls[i];
+            wall.x -= config.speed;
 
-            let bottomY = pipe.topHeight + pipe.gap;
+            let bottomY = wall.topHeight + wall.gap;
+            let bottomHeight = canvas.height - bottomY;
 
-            draw3DPipe(pipe.x, 0, pipe.width, pipe.topHeight, true);
-            draw3DPipe(pipe.x, bottomY, pipe.width, groundY - bottomY, false);
+            // Dibujar muros top/bottom
+            drawBrickWall(wall.x, 0, wall.width, wall.topHeight, wall.topText, wall.topBroken);
+            drawBrickWall(wall.x, bottomY, wall.width, bottomHeight, wall.bottomText, wall.bottomBroken);
 
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 22px Arial";
-            ctx.textAlign = "center";
-            ctx.shadowColor = "black"; ctx.shadowBlur = 8;
-            ctx.fillText(pipe.topText, pipe.x + pipe.width / 2, pipe.topHeight - 40);
-            ctx.fillText(pipe.bottomText, pipe.x + pipe.width / 2, bottomY + 40);
-            ctx.shadowBlur = 0;
-
+            // Detección de Colisiones
             connectedPlayers.forEach(p => {
                 if (!p.bird.isAlive) return;
 
-                if (p.bird.x + p.bird.radius > pipe.x - 5 && p.bird.x - p.bird.radius < pipe.x + pipe.width + 5) {
-                    if (p.bird.y - p.bird.radius < pipe.topHeight) {
-                        if (pipe.topIsCorrect) {
-                            if (!p.bird.scoredPipes.has(pipe.id)) {
-                                p.bird.score++;
-                                playScoreSFX();
+                if (p.bird.x + p.bird.radius > wall.x && p.bird.x - p.bird.radius < wall.x + wall.width) {
+                    // Colisión con Muro Superior
+                    if (p.bird.y - p.bird.radius < wall.topHeight) {
+                        if (wall.topIsCorrect) {
+                            if (!wall.topBroken) {
+                                wall.topBroken = true;
+                                playBreakSFX();
+                                createBrickDebris(wall.x + wall.width / 2, wall.topHeight / 2);
                                 createStarParticles(p.bird.x, p.bird.y);
-                                p.bird.scoredPipes.add(pipe.id);
-                                updateLiveScoreboard();
                             }
+                            if (!p.bird.scoredWalls.has(wall.id)) { p.bird.score++; p.bird.scoredWalls.add(wall.id); updateLiveScoreboard(); }
                         } else {
                             killBird(p);
                         }
                     } 
+                    // Colisión con Muro Inferior
                     else if (p.bird.y + p.bird.radius > bottomY) {
-                        if (!pipe.topIsCorrect) {
-                            if (!p.bird.scoredPipes.has(pipe.id)) {
-                                p.bird.score++;
-                                playScoreSFX();
+                        if (!wall.topIsCorrect) {
+                            if (!wall.bottomBroken) {
+                                wall.bottomBroken = true;
+                                playBreakSFX();
+                                createBrickDebris(wall.x + wall.width / 2, bottomY + bottomHeight / 2);
                                 createStarParticles(p.bird.x, p.bird.y);
-                                p.bird.scoredPipes.add(pipe.id);
-                                updateLiveScoreboard();
                             }
+                            if (!p.bird.scoredWalls.has(wall.id)) { p.bird.score++; p.bird.scoredWalls.add(wall.id); updateLiveScoreboard(); }
                         } else {
                             killBird(p);
                         }
@@ -1170,32 +641,24 @@
                 }
             });
 
-            if (pipe.x + pipe.width < 0) {
-                pipes.splice(i, 1);
-                spawnPipeSet(1000);
+            if (wall.x + wall.width < 0) {
+                walls.splice(i, 1);
+                spawnWallSet(1000);
             }
         }
 
-        if (activeCount === 0) {
-            endMatch();
-            return;
-        }
-
+        if (activeCount === 0) return endMatch();
         animationId = requestAnimationFrame(gameLoop);
     }
 
     function endMatch() {
         gameActive = false;
         cancelAnimationFrame(animationId);
-
-        let resultsHTML = "<h3 style='margin-bottom:10px;'>Leaderboard Final</h3>";
+        let resultsHTML = "<h3>Leaderboard Final</h3>";
         let sorted = [...connectedPlayers].sort((a, b) => b.bird.score - a.bird.score);
-        
         sorted.forEach((p, rank) => {
-            let bonusBadge = p.bird.hasWonBonus ? " 👑 (Last Standing +5)" : "";
-            resultsHTML += `<p style="color:${p.color.hex}; margin:4px 0;">${rank + 1}. ${p.name} - ${p.bird.score} pts${bonusBadge}</p>`;
+            resultsHTML += `<p style="color:${p.color.hex};">${rank + 1}. ${p.name} - ${p.bird.score} pts</p>`;
         });
-
         document.getElementById('leaderboard-results').innerHTML = resultsHTML;
         switchScreen('gameplay-container', 'gameover-screen');
     }
